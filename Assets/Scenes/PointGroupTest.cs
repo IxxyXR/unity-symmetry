@@ -2,24 +2,22 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using NaughtyAttributes;
-using UnityEditor;
 using UnityEngine.Rendering;
 
 
 [ExecuteInEditMode]
-public class WallPaperTest : MonoBehaviour
+public class PointGroupTest : MonoBehaviour
 {
     [Header("Symmetry")]
-    public SymmetryGroup.R group;
-    public Vector2 TileSize = Vector2.one;
-    public float UnitScale = 1f;
-    public Vector2 UnitOffset = Vector2.zero;
-    public Vector2 Spacing = Vector2.one;
-
-    [Header("Iteration")]
-    public int RepeatX = 1;
-    public int RepeatY = 1;
-
+    public PointSymmetry.Family family;
+    public int n = 3;
+    public float radius = 1f;
+    
+    [Header("Transform Before")]
+    public Vector3 Position = Vector3.zero;
+    public Vector3 Rotation = Vector3.zero;
+    public Vector3 Scale = Vector3.one;
+    
     [Header("Transform Each")]
     public Vector3 PositionEach = Vector3.zero;
     public Vector3 RotationEach = Vector3.zero;
@@ -29,12 +27,12 @@ public class WallPaperTest : MonoBehaviour
     [BoxGroup("Gizmos")] public bool symmetryGizmos;
     [BoxGroup("Gizmos")] public bool domainGizmos;
     
-    private WallpaperSymmetry sym;
+    private PointSymmetry sym;
     private List<Vector2> gizmoPath;
 
     private void OnValidate()
     {
-        sym = new WallpaperSymmetry(group, RepeatX, RepeatY, TileSize, UnitScale, UnitOffset, Spacing);
+        sym = new PointSymmetry(family, n, radius);
     }
 
     void Update()
@@ -56,13 +54,14 @@ public class WallPaperTest : MonoBehaviour
         if (mesh == null) return;
 
         var matrices = new List<Matrix4x4>();
+        var transformBefore = Matrix4x4.TRS(Position, Quaternion.Euler(Rotation), Scale);
         var cumulativeTransform = Matrix4x4.TRS(PositionEach, Quaternion.Euler(RotationEach), ScaleEach);
         var currentCumulativeTransform = cumulativeTransform;
 
         foreach (var m in sym.matrices)
         {
             matrices.Add(
-                ApplyAfter ? currentCumulativeTransform * m : m * currentCumulativeTransform
+                (ApplyAfter ? currentCumulativeTransform * m : m * currentCumulativeTransform) * transformBefore
             );
             currentCumulativeTransform *= cumulativeTransform;
         }
@@ -90,7 +89,7 @@ public class WallPaperTest : MonoBehaviour
         {
             for (int subMeshIndex = 0; subMeshIndex < mesh.subMeshCount; subMeshIndex++)
             {
-                Graphics.DrawMeshInstanced (mesh, subMeshIndex, material, batches[batchIndex], null, castShadows, receiveShadows);
+                Graphics.DrawMeshInstanced(mesh, subMeshIndex, material, batches[batchIndex], null, castShadows, receiveShadows);
             }
         }
     }
@@ -121,15 +120,6 @@ public class WallPaperTest : MonoBehaviour
             }
         }
         
-        if (domainGizmos)
-        {
-            foreach (var m in sym.matrices)
-            {
-                var points = sym.groupProperties.fundamentalRegion.points;
-                var path = points.Select(v => (Vector2)m.MultiplyPoint3x4(v)).ToList();
-                DrawPathGizmo(path);
-            }
-        }
     }
 
     private void DrawPathGizmo(List<Vector2> path)

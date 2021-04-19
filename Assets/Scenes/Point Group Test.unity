@@ -134,7 +134,7 @@ GameObject:
   - component: {fileID: 1605842914}
   - component: {fileID: 1605842913}
   m_Layer: 0
-  m_Name: Wallpaper 1
+  m_Name: Point Group 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -149,16 +149,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 1605842912}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6119fd20cd3976f49b0ea4b79c1bdefc, type: 3}
+  m_Script: {fileID: 11500000, guid: 82a3cc4b93084de4b8554a850d644438, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  group: 1
-  TileSize: {x: 0.12, y: 0.15}
-  UnitScale: 0.95
-  UnitOffset: {x: -1.17, y: 0.76}
-  Spacing: {x: 1.02, y: 0.81}
-  RepeatX: 4
-  RepeatY: 4
+  family: 9
+  n: 4
+  radius: 5.9
+  Position: {x: 0, y: 0, z: 0}
+  Rotation: {x: 0, y: 0, z: 0}
+  Scale: {x: 1, y: 1, z: 1}
   PositionEach: {x: 0, y: 0, z: 0}
   RotationEach: {x: 0, y: 0, z: 0}
   ScaleEach: {x: 1, y: 1, z: 1}
