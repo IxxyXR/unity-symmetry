@@ -15,7 +15,8 @@ public class WallPaperTest : MonoBehaviour
     public float UnitScale = 1f;
     public Vector2 UnitOffset = Vector2.zero;
     public Vector2 Spacing = Vector2.one;
-
+    public Vector4 d;
+    
     [Header("Iteration")]
     public int RepeatX = 1;
     public int RepeatY = 1;
@@ -34,7 +35,7 @@ public class WallPaperTest : MonoBehaviour
 
     private void OnValidate()
     {
-        sym = new WallpaperSymmetry(group, RepeatX, RepeatY, TileSize, UnitScale, UnitOffset, Spacing);
+        sym = new WallpaperSymmetry(group, RepeatX, RepeatY, TileSize, UnitScale, UnitOffset, Spacing, d);
     }
 
     void Update()

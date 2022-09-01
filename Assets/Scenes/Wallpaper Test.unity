@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657874, g: 0.4964164, b: 0.57481974, a: 1}
+  m_IndirectSpecularColor: {r: 0, g: 0.99999946, b: 0.99999946, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -152,19 +152,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6119fd20cd3976f49b0ea4b79c1bdefc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  group: 1
-  TileSize: {x: 0.12, y: 0.15}
-  UnitScale: 0.95
-  UnitOffset: {x: -1.17, y: 0.76}
-  Spacing: {x: 1.02, y: 0.81}
-  RepeatX: 4
-  RepeatY: 4
+  group: 13
+  TileSize: {x: 1, y: 1}
+  UnitScale: 1
+  UnitOffset: {x: -0.51, y: 0.61}
+  Spacing: {x: 2.1, y: 1.46}
+  d: {x: 2.05, y: 2, z: 0, w: 0}
+  RepeatX: 2
+  RepeatY: 3
   PositionEach: {x: 0, y: 0, z: 0}
   RotationEach: {x: 0, y: 0, z: 0}
   ScaleEach: {x: 1, y: 1, z: 1}
   ApplyAfter: 0
-  symmetryGizmos: 0
-  domainGizmos: 0
+  symmetryGizmos: 1
+  domainGizmos: 1
 --- !u!23 &1605842914
 MeshRenderer:
   m_ObjectHideFlags: 0
