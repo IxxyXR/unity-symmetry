@@ -120,6 +120,7 @@ public class SymmetryGroup {
         return reflectionMat;
     }
 
+    [Serializable]
     public enum R
     {
         p1,
@@ -165,7 +166,7 @@ public class SymmetryGroup {
         return crystallographicGroupSymbolMap[id];
     }
 
-    public SymmetryGroup(R symmetryGroupId, Vector2 tileSize) {
+    public SymmetryGroup(R symmetryGroupId, Vector2 tileSize, Vector4 d) {
         
         id = symmetryGroupId;
         
@@ -173,11 +174,11 @@ public class SymmetryGroup {
         
         switch(symmetryGroupId) {
             
-            case R.p1:                
-                d1x = 2;
-                d1y = 0;
-                d2x = .8f;
-                d2y = 2;
+            case R.p1:
+                d1x = d.x;
+                d1y = d.y;
+                d2x = d.z;
+                d2y = d.w;
                 offsetX = tileSize.x/2 - (d1x + d2x) / 2;
                 offsetY = tileSize.y/2 - (d1y + d2y) / 2;
                 fundamentalRegion = new Polygon(new []
@@ -197,10 +198,10 @@ public class SymmetryGroup {
                 break;
                 
             case R.p2:
-                d1x = 2;
-                d1y = 0;
-                d2x = .8f;
-                d2y = 2;
+                d1x = d.x;
+                d1y = d.y;
+                d2x = d.z;
+                d2y = d.w;
                 offsetX = tileSize.x/2 - (d1x + d2x)/2;
                 offsetY = tileSize.y/2 - (d1y + d2y)/2;
                 fundamentalRegion = new Polygon(new [] {
@@ -409,8 +410,8 @@ public class SymmetryGroup {
                 break;
                 
             case R.pm:
-                dx = 3;
-                dy = 1.2f;
+                dx = d.x;
+                dy = d.y;
                 offsetX = tileSize.x/2 - dx / 4;
                 offsetY = tileSize.y/2 - dy/2;
                 fundamentalRegion = new Polygon(new []{
@@ -431,8 +432,8 @@ public class SymmetryGroup {
                 break;
                 
             case R.cm:
-                dx = 1.5f;
-                dy = 1.2f;
+                dx = d.x;
+                dy = d.y;
                 offsetX = tileSize.x/2 - dx/2;
                 offsetY = tileSize.y/2 - dy/2;
                 fundamentalRegion = new Polygon(new []{
@@ -500,8 +501,8 @@ public class SymmetryGroup {
                 break;
                 
             case R.pgg:
-                dx = 1.5f;
-                dy = 1.2f;
+                dx = d.x;
+                dy = d.y;
                 offsetX = tileSize.x/2 - dx/2;
                 offsetY = tileSize.y/2 - dy/2;
                 fundamentalRegion = new Polygon(new []{

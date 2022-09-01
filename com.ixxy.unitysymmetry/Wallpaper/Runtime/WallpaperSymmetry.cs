@@ -14,8 +14,23 @@ public class WallpaperSymmetry
     
     public readonly SymmetryGroup groupProperties;
     public readonly List<Matrix4x4> matrices;
-    
-    public WallpaperSymmetry(SymmetryGroup.R _group, int _repeatX, int _repeatY, Vector2 _tileSize, float _unitScale, Vector2 _unitOffset, Vector2 _spacing)
+
+    public WallpaperSymmetry(SymmetryGroup.R _group, int _repeatX, int _repeatY)
+    {
+        group = _group;
+        repeatX = _repeatX;
+        repeatY = _repeatY;
+        tileSize = Vector2.one;
+        unitScale = 1;
+        unitOffset = Vector2.one;
+        spacing = Vector2.one;
+        groupProperties = new SymmetryGroup(group, tileSize, Vector4.zero); // TODO width and height don't do anything
+        matrices = new List<Matrix4x4>();
+
+        Initialize();
+    }
+
+    public WallpaperSymmetry(SymmetryGroup.R _group, int _repeatX, int _repeatY, Vector2 _tileSize, float _unitScale, Vector2 _unitOffset, Vector2 _spacing, Vector4 d)
     {
         group = _group;
         repeatX = _repeatX;
@@ -24,10 +39,14 @@ public class WallpaperSymmetry
         unitScale = _unitScale;
         unitOffset = _unitOffset;
         spacing = _spacing;
-
-        groupProperties = new SymmetryGroup(group, tileSize); // TODO width and height don't do anything
+        groupProperties = new SymmetryGroup(group, tileSize, d); // TODO width and height don't do anything
         matrices = new List<Matrix4x4>();
 
+        Initialize();
+    }
+
+    private void Initialize()
+    {
         var initialMatrix = Matrix4x4.identity;
         var translation = Matrix4x4.Translate(unitOffset);
         var scale = Matrix4x4.Scale(Vector3.one * unitScale);
