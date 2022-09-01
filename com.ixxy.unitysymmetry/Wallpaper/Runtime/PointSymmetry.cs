@@ -8,6 +8,7 @@ using UnityEngine;
 
 public class PointSymmetry {
     
+    [Serializable]
     public enum Family
     {
         Cn,
