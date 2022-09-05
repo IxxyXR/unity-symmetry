@@ -2,24 +2,26 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using NaughtyAttributes;
-using UnityEditor;
 using UnityEngine.Rendering;
 
 
 [ExecuteInEditMode]
 public class WallPaperTest : MonoBehaviour
 {
-    [Header("Symmetry")]
+    [Header("Simple Settings")]
+    public bool SimpleSettingsOnly;
     public SymmetryGroup.R group;
+    public int RepeatX = 1;
+    public int RepeatY = 1;
+    public float scale = .1f;
+    
+    [Header("Symmetry")]
     public Vector2 TileSize = Vector2.one;
     public float UnitScale = 1f;
     public Vector2 UnitOffset = Vector2.zero;
     public Vector2 Spacing = Vector2.one;
     public Vector4 d;
-    
-    [Header("Iteration")]
-    public int RepeatX = 1;
-    public int RepeatY = 1;
+
 
     [Header("Transform Each")]
     public Vector3 PositionEach = Vector3.zero;
@@ -35,7 +37,14 @@ public class WallPaperTest : MonoBehaviour
 
     private void OnValidate()
     {
-        sym = new WallpaperSymmetry(group, RepeatX, RepeatY, TileSize, UnitScale, UnitOffset, Spacing, d);
+        if (SimpleSettingsOnly)
+        {
+            sym = new WallpaperSymmetry(group, RepeatX, RepeatY, scale);
+        }
+        else
+        {
+            sym = new WallpaperSymmetry(group, RepeatX, RepeatY, TileSize, UnitScale, UnitOffset, Spacing, d, scale);
+        }
     }
 
     void Update()
@@ -91,7 +100,7 @@ public class WallPaperTest : MonoBehaviour
         {
             for (int subMeshIndex = 0; subMeshIndex < mesh.subMeshCount; subMeshIndex++)
             {
-                Graphics.DrawMeshInstanced (mesh, subMeshIndex, material, batches[batchIndex], null, castShadows, receiveShadows);
+                Graphics.DrawMeshInstanced(mesh, subMeshIndex, material, batches[batchIndex], null, castShadows, receiveShadows);
             }
         }
     }

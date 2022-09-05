@@ -11,71 +11,25 @@ public class Polygon
     // Polygon coordinates.
     public Vector2[] points;
 
-    // Number of sides in the polygon.
-    public int polySides;
-
     /**
      * @param points {{0,0}, {10,0}, {10,10}, {0,10}} Coordinates of points in order (clockwise or counterclockwise).
      * @param offsetX X offset to be applied to each point.
      * @param offsetY Y offset to be applied to each point.
      */
-
-    public Polygon(Vector2[] _points, float offsetX, float offsetY)
+    public Polygon(Vector2[] _points, double offsetX, double offsetY)
     {
         if (_points.Length < 1)
         {
             Debug.LogError("Empty polygon");
             return;
         }
-        polySides = _points.Length;
-        points = _points.Select(v=>new Vector2(v.x+offsetX, v.y+offsetY)).ToArray();
+        points = _points.Select(v=>new Vector2((float)(v.x+offsetX), (float)(v.y+offsetY))).ToArray();
     }
 }
 
 
 public class SymmetryGroup {
     
-    private static Dictionary<R, string> conwayGroupSymbolMap = new Dictionary<R, string>()
-    {
-        {R.p1, "o"},
-        {R.p2, "2222"},
-        {R.pm, "**"},
-        {R.pg, "xx"},
-        {R.cm, "*x"},
-        {R.pmm, "*2222"},
-        {R.pmg, "22*"},
-        {R.pgg, "22x"},
-        {R.cmm, "2*22"},
-        {R.p4, "442"},
-        {R.p4m, "*442"},
-        {R.p4g, "4*2"},
-        {R.p3, "333"},
-        {R.p3m1, "*333"},
-        {R.p31m, "3*3"},
-        {R.p6, "632"},
-        {R.p6m, "*632"},
-    };
-    private static Dictionary<R, string> crystallographicGroupSymbolMap = new Dictionary<R, string>()
-    {
-        {R.p1, "p1"},
-        {R.pg, "pg"},
-        {R.cm, "cm"},
-        {R.pm, "pm"},
-        {R.p6, "p6"},
-        {R.p6m, "p6mm"},
-        {R.p3, "p3"},
-        {R.p3m1, "p3m1"},
-        {R.p31m, "p31m"},
-        {R.p4, "p4"},
-        {R.p4m, "p4mm"},
-        {R.p4g, "p4mg"},
-        {R.p2, "p2"},
-        {R.pgg, "p2gg"},
-        {R.pmg, "p2mg"},
-        {R.pmm, "p2mm"},
-        {R.cmm, "c2mm"},
-    };
-
     public Polygon fundamentalRegion; // fundamental region for the symmetry group
     public Vector2 center;  // center of fundamental tile for the translation subgroup
     private Vector2 translationX;
@@ -142,35 +96,22 @@ public class SymmetryGroup {
         cmm,
     }
 
-
-    public static Dictionary<R, string> getConwayGroupSymbolMap() {
-        return conwayGroupSymbolMap;
-    }
-
-    public string getConwaySymbol() {
-        return conwayGroupSymbolMap[id];
-    }
-    
-    public Matrix4x4 setRotate(float rotation, Vector2 center)
+    public Matrix4x4 setRotate(double rotation, Vector2 pivot)
     {
-        Ray axis = new Ray(Vector3.zero, new Vector3(center.x, center.y, 0));
+        Ray axis = new Ray(Vector3.zero, new Vector3(pivot.x, pivot.y, 0));
         var mat = Matrix4x4.TRS(
             -axis.origin,
-            Quaternion.AngleAxis(rotation, Vector3.forward),
+            Quaternion.AngleAxis((float)rotation, Vector3.forward),
             Vector3.one
         );
         return mat * Matrix4x4.TRS(axis.origin, Quaternion.identity, Vector3.one);
-    }
-
-    public string getCrystallographicSymbol() {
-        return crystallographicGroupSymbolMap[id];
     }
 
     public SymmetryGroup(R symmetryGroupId, Vector2 tileSize, Vector4 d) {
         
         id = symmetryGroupId;
         
-        float d1x, d1y, d2x, d2y, offsetX, offsetY;
+        double d1x, d1y, d2x, d2y, offsetX, offsetY;
         
         switch(symmetryGroupId) {
             
@@ -184,17 +125,17 @@ public class SymmetryGroup {
                 fundamentalRegion = new Polygon(new []
                 {
                     new Vector2(0f, 0f),
-                    new Vector2(d1x, d1y),
-                    new Vector2(d1x+d2x, d1y+d2y),
-                   new Vector2(d2x, d2y)
+                    new Vector2((float)d1x, (float)d1y),
+                    new Vector2((float)(d1x+d2x), (float)(d1y+d2y)),
+                   new Vector2((float)d2x, (float)d2y)
                 }, offsetX, offsetY);
                 center = new Vector2(
-                    (d1x + d2x) / 2 + offsetX,
-                    (d1y + d2y) / 2 + offsetY
+                    (float)((d1x + d2x) / 2 + offsetX),
+                    (float)((d1y + d2y) / 2 + offsetY)
                 );
-                translationX = new Vector2(d1x, d2x);
-                translationY = new Vector2(d1y, d2y);
-                cosetReps = new Matrix4x4[] {};
+                translationX = new Vector2((float)d1x, (float)d2x);
+                translationY = new Vector2((float)d1y, (float)d2y);
+                cosetReps = new Matrix4x4[]{};
                 break;
                 
             case R.p2:
@@ -204,46 +145,47 @@ public class SymmetryGroup {
                 d2y = d.w;
                 offsetX = tileSize.x/2 - (d1x + d2x)/2;
                 offsetY = tileSize.y/2 - (d1y + d2y)/2;
-                fundamentalRegion = new Polygon(new [] {
+                fundamentalRegion = new Polygon(new []
+                {
                     new Vector2(0,0),
-                    new Vector2(d1x, d1y),
-                    new Vector2(d1x+d2x, d1y+d2y),
-                    new Vector2(d2x, d2y)
+                    new Vector2((float)d1x, (float)d1y),
+                    new Vector2((float)(d1x+d2x), (float)(d1y+d2y)),
+                    new Vector2((float)d2x, (float)d2y)
                 }, offsetX, offsetY);
                 center = new Vector2(
-                    d1x / 2 + offsetX,
-                    d1y / 2 + offsetY
+                    (float)(d1x / 2 + offsetX),
+                    (float)(d1y / 2 + offsetY)
                 );
-                translationX = new Vector2(d1x, d2x*2);
-                translationY = new Vector2(d1y, d2y*2);
+                translationX = new Vector2((float)d1x, (float)d2x*2);
+                translationY = new Vector2((float)d1y, (float)d2y*2);
                 cosetReps = new Matrix4x4[1];
                 cosetReps[0] = setRotate(180, center);
                 break;
                 
             case R.p3:
-                float hexSize = 3;
+                double hexSize = d.x;
                 d1x = 3*hexSize/4;
-                d1y = hexSize * ((float)Math.Sqrt(3)/4);
+                d1y = hexSize * (Math.Sqrt(3)/4);
                 d2x = d1x;
                 d2y = -d1y;
                 offsetX = tileSize.x/2;
                 offsetY = tileSize.y/2;
                 fundamentalRegion = new Polygon(new [] {
                     new Vector2(0,0),
-                    new Vector2(hexSize/2 * 1/2, hexSize/2 * (float)(Math.Sqrt(3)/2)),
-                    new Vector2(hexSize/2,0),
-                    new Vector2(hexSize/2 * 1/2, -hexSize/2 * (float)Math.Sqrt(3)/2)
+                    new Vector2((float)hexSize/2 * 1/2, (float)(hexSize/2 * (Math.Sqrt(3)/2))),
+                    new Vector2((float)hexSize/2,0),
+                    new Vector2((float)hexSize/2 * 1/2, (float)(-hexSize/2 * Math.Sqrt(3)/2))
                 }, offsetX, offsetY);
                 center = new Vector2(tileSize.x/2, tileSize.y/2);
-                translationX = new Vector2(d1x, d2x);
-                translationY = new Vector2(d1y, d2y);
+                translationX = new Vector2((float)d1x, (float)d2x);
+                translationY = new Vector2((float)d1y, (float)d2y);
                 cosetReps = new Matrix4x4[2];
                 cosetReps[0] = setRotate(120, center);
                 cosetReps[1] = setRotate(240, center);
                 break;
                 
             case R.p4:                
-                float squareSize = 3;
+                double squareSize = d.x;
                 d1x = squareSize;
                 d1y = 0;
                 d2x = 0;
@@ -252,16 +194,16 @@ public class SymmetryGroup {
                 offsetY = tileSize.y/2;
                 fundamentalRegion = new Polygon(new [] {
                     new Vector2(0,0),
-                    new Vector2(d2x/2, d2y/2),
-                    new Vector2((d1x+d2x)/2,(d1y+d2y)/2),
-                    new Vector2(d1x/2, d1y/2)
+                    new Vector2((float)d2x/2, (float)d2y/2),
+                    new Vector2((float)(d1x+d2x)/2,(float)(d1y+d2y)/2),
+                    new Vector2((float)d1x/2, (float)d1y/2)
                 }, offsetX, offsetY);
                 center = new Vector2(
                     tileSize.x/2,
                     tileSize.y/2
                 );
-                translationX = new Vector2(d1x, d2x);
-                translationY = new Vector2(d1y, d2y);
+                translationX = new Vector2((float)d1x, (float)d2x);
+                translationY = new Vector2((float)d1y, (float)d2y);
                 cosetReps = new Matrix4x4[3];
                 cosetReps[0] = setRotate(90, center);
                 cosetReps[1] = setRotate(180, center);
@@ -269,25 +211,25 @@ public class SymmetryGroup {
                 break;
                 
             case R.p6:
-                hexSize = 4;
+                hexSize = d.x;
                 d1x = 3*hexSize/4;
-                d1y = hexSize * ((float)Math.Sqrt(3)/4);
+                d1y = hexSize * (Math.Sqrt(3)/4);
                 d2x = d1x;
                 d2y = -d1y;
                 offsetX = tileSize.x/2;
                 offsetY = tileSize.y/2;
                 fundamentalRegion = new Polygon(new [] {
                     new Vector2(0,0),
-                    new Vector2(0, hexSize/2 * (float)Math.Sqrt(3)/2),
-                    new Vector2(hexSize/4,hexSize/2 * (float)Math.Sqrt(3)/2),
-                    new Vector2(3*hexSize/8, hexSize*(float)Math.Sqrt(3)/8)
+                    new Vector2(0, (float)(hexSize/2 * Math.Sqrt(3)/2)),
+                    new Vector2((float)hexSize/4,(float)(hexSize/2 * Math.Sqrt(3)/2)),
+                    new Vector2((float)(3*hexSize/8), (float)(hexSize*Math.Sqrt(3)/8))
                 }, offsetX, offsetY);
                 center = new Vector2(
                     tileSize.x/2,
                     tileSize.y/2
                 );
-                translationX = new Vector2(d1x, d2x);
-                translationY = new Vector2(d1y, d2y);
+                translationX = new Vector2((float)d1x, (float)d2x);
+                translationY = new Vector2((float)d1y, (float)d2y);
                 cosetReps = new Matrix4x4[5];
                 for (int i=0; i<5; i++) {
                     cosetReps[i] = setRotate(60 * (i+1), center);
@@ -295,47 +237,47 @@ public class SymmetryGroup {
                 break;
                 
             case R.pmm:
-                float dx = 4;
-                float dy = 2;
+                double dx = d.x;
+                double dy = d.y;
                 offsetX = tileSize.x/2 - dx/4;
                 offsetY = tileSize.y/2 - dy/4;
                 fundamentalRegion = new Polygon(new [] {
                     new Vector2(0,0),
-                    new Vector2(dx/2, 0),
-                    new Vector2(dx/2, dy/2),
-                    new Vector2(0, dy/2)
+                    new Vector2((float)dx/2, 0),
+                    new Vector2((float)dx/2, (float)dy/2),
+                    new Vector2(0, (float)dy/2)
                 }, offsetX, offsetY);
                 center = new Vector2(
                     tileSize.x/2,
                     tileSize.y/2
                 );
-                translationX = new Vector2(dx, 0);
-                translationY = new Vector2(0, dy);
+                translationX = new Vector2((float)dx, 0);
+                translationY = new Vector2(0, (float)dy);
                 cosetReps = new Matrix4x4[3];
                 cosetReps[0] = setReflectionMatrix(fundamentalRegion.points[0], fundamentalRegion.points[1]);
                 cosetReps[1] = setReflectionMatrix(fundamentalRegion.points[0], fundamentalRegion.points[3]);
-                cosetReps[2] = setRotate(180, new Vector2(offsetX, offsetY));
+                cosetReps[2] = setRotate(180, new Vector2((float)offsetX, (float)offsetY));
                 break;
                 
             case R.p3m1:
-                hexSize = 5;
+                hexSize = d.x;
                 d1x = 3*hexSize/4;
-                d1y = hexSize * ((float)Math.Sqrt(3)/4);
+                d1y = hexSize * (Math.Sqrt(3)/4);
                 d2x = d1x;
                 d2y = -d1y;
                 offsetX = tileSize.x/2;
                 offsetY = tileSize.y/2;
                 fundamentalRegion = new Polygon(new [] {
                     new Vector2(0,0),
-                    new Vector2(hexSize/2 * 1/2, hexSize/2 * (float)(Math.Sqrt(3)/2) ),
-                    new Vector2(hexSize/2,0)
+                    new Vector2((float)hexSize/2 * 1/2, (float)(hexSize/2 * (Math.Sqrt(3)/2))),
+                    new Vector2((float)hexSize/2,0)
                 }, offsetX, offsetY);
                 center = new Vector2(
                     tileSize.x/2,
                     tileSize.y/2
                 );
-                translationX = new Vector2(d1x, d2x);
-                translationY = new Vector2(d1y, d2y);
+                translationX = new Vector2((float)d1x, (float)d2x);
+                translationY = new Vector2((float)d1y, (float)d2y);
                 cosetReps = new Matrix4x4[5];
                 cosetReps[0] = setRotate(120, center);
                 cosetReps[1] = setRotate(240, center);
@@ -348,7 +290,7 @@ public class SymmetryGroup {
                 break;
                 
             case R.p4m:
-                squareSize = 4;
+                squareSize = d.x;
                 d1x = squareSize;
                 d1y = 0;
                 d2x = 0;
@@ -357,15 +299,15 @@ public class SymmetryGroup {
                 offsetY = tileSize.y/2;
                 fundamentalRegion = new Polygon(new [] {
                     new Vector2(0,0),
-                    new Vector2(d2x/2, d2y/2),
-                    new Vector2((d1x+d2x)/2,(d1y+d2y)/2)
+                    new Vector2((float)d2x/2, (float)d2y/2),
+                    new Vector2((float)(d1x+d2x)/2,(float)(d1y+d2y)/2)
                 }, offsetX, offsetY);
                 center = new Vector2(
                     tileSize.x/2,
                     tileSize.y/2
                 );
-                translationX = new Vector2(d1x, d2x);
-                translationY = new Vector2(d1y, d2y);
+                translationX = new Vector2((float)d1x, (float)d2x);
+                translationY = new Vector2((float)d1y, (float)d2y);
                 cosetReps = new Matrix4x4[7];
                 cosetReps[0] = setRotate(90, center);
                 cosetReps[1] = setRotate(180, center);
@@ -379,24 +321,24 @@ public class SymmetryGroup {
                 break;
                 
             case R.p6m:
-                hexSize = 5;
+                hexSize = d.x;
                 d1x = 3*hexSize/4;
-                d1y = hexSize * ((float)Math.Sqrt(3)/4);
+                d1y = hexSize * (Math.Sqrt(3)/4);
                 d2x = d1x;
                 d2y = -d1y;
                 offsetX = tileSize.x/2;
                 offsetY = tileSize.y/2;
                 fundamentalRegion = new Polygon(new [] {
                     new Vector2(0,0),
-                    new Vector2(0, hexSize/2 * (float)Math.Sqrt(3)/2),
-                    new Vector2(hexSize/4,hexSize/2 * (float)Math.Sqrt(3)/2)
+                    new Vector2(0, (float)(hexSize/2 * Math.Sqrt(3)/2)),
+                    new Vector2((float)(hexSize/4),(float)(hexSize/2 * Math.Sqrt(3)/2))
                 }, offsetX, offsetY);
                 center = new Vector2(
                     tileSize.x/2,
                     tileSize.y/2
                 );
-                translationX = new Vector2(d1x, d2x);
-                translationY = new Vector2(d1y, d2y);
+                translationX = new Vector2((float)d1x, (float)d2x);
+                translationY = new Vector2((float)d1y, (float)d2y);
                 cosetReps = new Matrix4x4[11];
                 for (int i=0; i<5; i++ ) {
                     cosetReps[i] = setRotate(60 * (i+1), center);
@@ -416,16 +358,16 @@ public class SymmetryGroup {
                 offsetY = tileSize.y/2 - dy/2;
                 fundamentalRegion = new Polygon(new []{
                     new Vector2(0,0),
-                    new Vector2(dx/2, 0),
-                    new Vector2(dx/2, dy),
-                    new Vector2(0, dy)
+                    new Vector2((float)dx/2, 0),
+                    new Vector2((float)dx/2, (float)dy),
+                    new Vector2(0, (float)dy)
                 }, offsetX, offsetY);
                 center = new Vector2(
                     tileSize.x/2,
                     tileSize.y/2
                 );
-                translationX = new Vector2(dx, 0);
-                translationY = new Vector2(0, dy);
+                translationX = new Vector2((float)dx, 0);
+                translationY = new Vector2(0, (float)dy);
                 cosetReps = new Matrix4x4[1];
                 
                 cosetReps[0] = setReflectionMatrix(fundamentalRegion.points[0], fundamentalRegion.points[3]);
@@ -438,64 +380,64 @@ public class SymmetryGroup {
                 offsetY = tileSize.y/2 - dy/2;
                 fundamentalRegion = new Polygon(new []{
                     new Vector2(0,0),
-                    new Vector2(dx, 0),
-                    new Vector2(dx, dy),
-                    new Vector2(0, dy)
+                    new Vector2((float)dx, 0),
+                    new Vector2((float)dx, (float)dy),
+                    new Vector2(0, (float)dy)
                 }, offsetX, offsetY);
                 center = new Vector2(
                     tileSize.x/2,
                     tileSize.y/2
                 );
-                translationX = new Vector2(dx, dx);
-                translationY = new Vector2(dy, -dy);
+                translationX = new Vector2((float)dx, (float)dx);
+                translationY = new Vector2((float)dy, (float)-dy);
                 cosetReps = new Matrix4x4[1];
                 
                 cosetReps[0] = setReflectionMatrix(fundamentalRegion.points[0], fundamentalRegion.points[3]);
                 break;
                 
             case R.pg:
-                dx = 1.5f;
-                dy = 1.2f;
+                dx = d.x;
+                dy = d.y;
                 offsetX = tileSize.x/2 - dx/2;
                 offsetY = tileSize.y/2 - dy/2;
                 fundamentalRegion = new Polygon(new []{
                     new Vector2(0,0),
-                    new Vector2(dx, 0),
-                    new Vector2(dx, dy),
-                    new Vector2(0, dy)
+                    new Vector2((float)dx, 0),
+                    new Vector2((float)dx, (float)dy),
+                    new Vector2(0, (float)dy)
                 }, offsetX, offsetY);
                 center = new Vector2(
                     tileSize.x/2,
                     tileSize.y/2
                 );
-                translationX = new Vector2(dx, 0);
-                translationY = new Vector2(0, 2*dy);
+                translationX = new Vector2((float)dx, 0);
+                translationY = new Vector2(0, (float)(2*dy));
                 cosetReps = new Matrix4x4[1];
                 
-                cosetReps[0] = setReflectionMatrix(new Vector2(dx/2 + offsetX, 0 + offsetY), new Vector2(dx/2 + offsetX, dy + offsetY));
-                cosetReps[0] = Matrix4x4.Translate(new Vector3(0, dy, 0)) * cosetReps[0];
+                cosetReps[0] = setReflectionMatrix(new Vector2((float)(dx/2 + offsetX), (float)(0 + offsetY)), new Vector2((float)(dx/2 + offsetX), (float)(dy + offsetY)));
+                cosetReps[0] = Matrix4x4.Translate(new Vector3(0, (float)dy, 0)) * cosetReps[0];
                 break;
                 
             case R.pmg:
-                dx = 1.5f;
-                dy = 1.2f;
+                dx = d.x;
+                dy = d.y;
                 offsetX = tileSize.x/2 - dx/2;
                 offsetY = tileSize.y/2 - dy/2;
                 fundamentalRegion = new Polygon(new [] {
                     new Vector2(0,0),
-                    new Vector2(dx, 0),
-                    new Vector2(dx, dy),
-                    new Vector2(0, dy)
+                    new Vector2((float)dx, 0),
+                    new Vector2((float)dx, (float)dy),
+                    new Vector2(0, (float)dy)
                 }, offsetX, offsetY);
                 center = new Vector2(
                     tileSize.x/2,
                     tileSize.y/2
                 );
-                translationX = new Vector2(2*dx, 0);
-                translationY = new Vector2(0, 2*dy);
+                translationX = new Vector2((float)(2*dx), 0);
+                translationY = new Vector2(0, (float)(2*dy));
                 cosetReps = new Matrix4x4[3];
                 cosetReps[0] = setReflectionMatrix(fundamentalRegion.points[1], fundamentalRegion.points[2]);
-                cosetReps[1] = setRotate(180, new Vector2(dx/2 + offsetX, 0 + offsetY));
+                cosetReps[1] = setRotate(180, new Vector2((float)(dx/2 + offsetX), (float)(0 + offsetY)));
                 cosetReps[2] = cosetReps[1];
                 cosetReps[2] = cosetReps[0] * cosetReps[2];
                 break;
@@ -507,65 +449,65 @@ public class SymmetryGroup {
                 offsetY = tileSize.y/2 - dy/2;
                 fundamentalRegion = new Polygon(new []{
                     new Vector2(0,0),
-                    new Vector2(dx, 0),
-                    new Vector2(dx, dy),
-                    new Vector2(0, dy)
+                    new Vector2((float)dx, 0),
+                    new Vector2((float)dx, (float)dy),
+                    new Vector2(0, (float)dy)
                 }, offsetX, offsetY);
                 center = new Vector2(
                     tileSize.x/2,
                     tileSize.y/2
                 );
-                translationX = new Vector2(2*dx, 0);
-                translationY = new Vector2(0, 2*dy);
+                translationX = new Vector2((float)(2*dx), 0);
+                translationY = new Vector2(0, (float)(2*dy));
                 cosetReps = new Matrix4x4[3];
                 
                 cosetReps[0] = setReflectionMatrix(fundamentalRegion.points[1], fundamentalRegion.points[2]);
-                cosetReps[0] = Matrix4x4.Translate(new Vector3(0, dy, 0)) * cosetReps[0];
-                cosetReps[1] = setRotate(180, new Vector2(dx/2 + offsetX, 0 + offsetY));
+                cosetReps[0] = Matrix4x4.Translate(new Vector3(0, (float)dy, 0)) * cosetReps[0];
+                cosetReps[1] = setRotate(180, new Vector2((float)(dx/2 + offsetX), (float)(0 + offsetY)));
                 cosetReps[2] = cosetReps[1];
                 cosetReps[2] = cosetReps[0] * cosetReps[2];
                 break;
                 
             case R.cmm:
-                dx = 1.5f;
-                dy = 1.2f;
+                dx = d.x;
+                dy = d.y;
                 offsetX = tileSize.x/2 - dx/2;
                 offsetY = tileSize.y/2 - dy/2;
                 fundamentalRegion = new Polygon(new []{
                     new Vector2(0,0),
-                    new Vector2(dx, 0),
-                    new Vector2(dx, dy),
-                    new Vector2(0, dy)
+                    new Vector2((float)dx, 0),
+                    new Vector2((float)dx, (float)dy),
+                    new Vector2(0, (float)dy)
                 }, offsetX, offsetY);
                 center = new Vector2(
                     tileSize.x/2,
                     tileSize.y/2
                 );
-                translationX = new Vector2(dx, dx);
-                translationY = new Vector2(2*dy, -2*dy);
+                translationX = new Vector2((float)dx, (float)dx);
+                translationY = new Vector2((float)(2*dy), (float)(-2*dy));
                 cosetReps = new Matrix4x4[3];
                 
                 cosetReps[0] = setReflectionMatrix(fundamentalRegion.points[1], fundamentalRegion.points[2]);
-                cosetReps[1] = setRotate(180, new Vector2(dx/2 + offsetX, 0 + offsetY));
+                cosetReps[1] = setRotate(180, new Vector2((float)(dx/2 + offsetX), (float)(0 + offsetY)));
                 cosetReps[2] = cosetReps[0];
                 cosetReps[2] = cosetReps[1] * cosetReps[2];
                 break;
                 
             case R.p31m:
-                float baseSize = 3;
+                double baseSize = d.x;
                 offsetX = tileSize.x/2 - baseSize / 2;
                 offsetY = tileSize.y/2;
                 fundamentalRegion = new Polygon(new []{
                     new Vector2(0,0),
-                    new Vector2(baseSize, 0),
-                    new Vector2(baseSize/2, (baseSize / 2) * (float)Math.Sqrt(3)/3)
+                    new Vector2((float)baseSize, 0),
+                    new Vector2((float)(baseSize/2), (float)((baseSize / 2) * (Math.Sqrt(3)/3)))
                 }, offsetX, offsetY);
                 center = new Vector2(
-                    3*baseSize / 4 + offsetX,
-                    baseSize * (float)Math.Sqrt(3)/4 + offsetY
+                    (float)(3*baseSize / 4 + offsetX),
+                    (float)(baseSize * Math.Sqrt(3)/4 + offsetY)
                 );
-                translationX = new Vector2(baseSize, baseSize/2);
-                translationY = new Vector2(0, baseSize * (float)Math.Sqrt(3)/2);
+                translationX = new Vector2((float)baseSize, (float)(baseSize/2));
+                translationY = new Vector2(0, (float)(baseSize * Math.Sqrt(3)/2));
                 cosetReps = new Matrix4x4[5];
                 cosetReps[0] = setRotate(120, new Vector2(fundamentalRegion.points[2][0], fundamentalRegion.points[2][1]));
                 cosetReps[1] = setRotate(240, new Vector2(fundamentalRegion.points[2][0], fundamentalRegion.points[2][1]));
@@ -577,21 +519,21 @@ public class SymmetryGroup {
                 break;
                 
             case R.p4g:
-                squareSize = 1.5f;
+                squareSize = d.x;
                 offsetX = tileSize.x/2 - squareSize / 2;
                 offsetY = tileSize.y/2 - squareSize / 2;
                 fundamentalRegion = new Polygon(new []{
                     new Vector2(0,0),
-                    new Vector2(0,squareSize),
-                    new Vector2(squareSize,squareSize),
-                    new Vector2(squareSize,0)
+                    new Vector2(0,(float)squareSize),
+                    new Vector2((float)squareSize,(float)squareSize),
+                    new Vector2((float)squareSize,0)
                 }, offsetX, offsetY);
                 center = new Vector2(
-                    0 + offsetX,
-                    0 + offsetY
+                    (float)(0 + offsetX),
+                    (float)(0 + offsetY)
                 );
-                translationX = new Vector2(2 * squareSize, 2 * squareSize);
-                translationY = new Vector2(2 * squareSize, -2 * squareSize);
+                translationX = new Vector2((float)(2 * squareSize), (float)(2 * squareSize));
+                translationY = new Vector2((float)(2 * squareSize), (float)(-2 * squareSize));
                 cosetReps = new Matrix4x4[7];
                 for (int i=0; i<3; i++) {
                     cosetReps[i] = setRotate(90 * (i + 1), center);
@@ -605,10 +547,6 @@ public class SymmetryGroup {
                 break;
                 
         }
-    }
-
-    public Polygon getFundamentalRegion() {
-        return fundamentalRegion;
     }
 
     public Vector2 getTranslationX() {
