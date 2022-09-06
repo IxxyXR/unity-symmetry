@@ -1,8 +1,6 @@
 // Based on https://github.com/hwatheod/wallpaper
 
-
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -545,7 +543,6 @@ public class SymmetryGroup {
                     cosetReps[i] = cosetReps[3] * cosetReps[i];
                 }
                 break;
-                
         }
     }
 
