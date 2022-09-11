@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-
-
-
 public class PointSymmetry {
     
     [Serializable]
@@ -19,16 +16,17 @@ public class PointSymmetry {
         Dnh,
         Dnd,
         T,
-        // Th,
-        // Td,
+        Th,
+        Td,
         O,
-        // Oh,
+        Oh,
         I,
-        // Ih,
+        Ih,
     }
 
     private Vector3 horizontalReflection = new Vector3(-1, 1, 1);
     private Vector3 verticalReflection = new Vector3(1, -1, 1);
+    private Vector3 inversion = new Vector3(-1, -1, -1);
 
     public readonly List<Matrix4x4> matrices;
     
@@ -55,9 +53,11 @@ public class PointSymmetry {
         return _matrices.Select(m => Matrix4x4.Rotate(Quaternion.Euler(axis*angle)) * m).ToList();
     }
     
-    private List<Matrix4x4> reflectAll(List<Matrix4x4> _matrices, Vector3 reflection)
+    private List<Matrix4x4> reflectAll(List<Matrix4x4> _matrices, Vector3 reflection, bool rotate=false)
     {
-        return _matrices.Select(m => Matrix4x4.Scale(reflection) * m).ToList();
+        var tr = Matrix4x4.Scale(reflection);
+        if (rotate) tr *= Matrix4x4.Rotate(Quaternion.Euler(0, 180, 0));
+        return _matrices.Select(m => tr * m).ToList();
     }
     
     public PointSymmetry(Family pointGroupFamily, int _n, float _radius)
@@ -104,22 +104,33 @@ public class PointSymmetry {
                 var tetra = Tetrahedron();
                 matrices = matricesForPolyhedra(tetra);
                 break;
-            // case Family.Th:
-            //     break;
-            // case Family.Td:
-            //     break;
+            case Family.Th:
+                var tetraH = Cube();
+                matrices = matricesForPolyhedra(tetraH);
+                break;
+            case Family.Td:
+                var tetraD = Tetrahedron();
+                matrices = matricesForPolyhedra(tetraD);
+                matrices.AddRange(reflectAll(matrices, horizontalReflection));
+                break;
             case Family.O:
                 var octa = Octahedron();
                 matrices = matricesForPolyhedra(octa);
                 break;
-            // case Family.Oh:
-            //     break;
+            case Family.Oh:
+                var octaH = Octahedron();
+                matrices = matricesForPolyhedra(octaH);
+                matrices.AddRange(reflectAll(matrices, horizontalReflection));
+                break;
             case Family.I:
                 var icosa = Icosahedron();
                 matrices = matricesForPolyhedra(icosa);
                 break;
-            // case Family.Ih:
-            //     break;
+            case Family.Ih:
+                var icosaH = Icosahedron();
+                matrices = matricesForPolyhedra(icosaH);
+                matrices.AddRange(reflectAll(matrices, horizontalReflection));
+                break;
         }
 
     }
