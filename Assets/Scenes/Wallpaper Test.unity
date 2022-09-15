@@ -153,15 +153,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SimpleSettingsOnly: 1
-  group: 0
-  RepeatX: 3
-  RepeatY: 3
+  group: 10
+  RepeatX: 4
+  RepeatY: 4
   scale: 1
   TileSize: {x: 1, y: 1}
   UnitScale: 1
-  UnitOffset: {x: -2.5, y: 0.5}
+  UnitOffset: {x: -0.75, y: -3}
   Spacing: {x: 1, y: 1}
-  d: {x: 2, y: 0, z: 0, w: 2}
+  d: {x: 1.5, y: 1.2, z: 0, w: 0}
   PositionEach: {x: 0, y: 0, z: 0}
   RotationEach: {x: 0, y: 0, z: 0}
   ScaleEach: {x: 1, y: 1, z: 1}
