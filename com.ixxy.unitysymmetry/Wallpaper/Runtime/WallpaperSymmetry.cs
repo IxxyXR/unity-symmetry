@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -28,33 +29,46 @@ public class WallpaperSymmetry
         switch (_group)
         {
             case SymmetryGroup.R.p1:
+                // width, skewY, skewX, height
                 d = new Vector4(2, 0, 0, 2);
                 // unitOffset = new Vector2(-2, 0);
                 unitOffset = new Vector2(0, 0);
                 break;
             case SymmetryGroup.R.p2:
+                // width, skewY, skewX, height
                 d = new Vector4(2, 0, 0, 2);
-                unitOffset = new Vector2(-2.5f, 0.5f);
+                unitOffset = new Vector2(-2f, -2f);
+                repeatY /= 2;
+                break;
+            case SymmetryGroup.R.pg:
+                d = new Vector4(1.5f, 2.4f);
+                unitOffset = new Vector2(-1.5f, 0);
+                repeatY /= 2;
+                break;
+            case SymmetryGroup.R.pm:
+                d = new Vector4(3, 1.2f, 0, 0);
+                unitOffset = new Vector2(-4.5f, 0);
+                repeatX /= 2;
+                break;
+            case SymmetryGroup.R.cm:
+                d = new Vector4(1.5f, 1.2f, 0, 0);
+                unitOffset = new Vector2(-2.25f, 0);
                 break;
             case SymmetryGroup.R.p3:
                 d = new Vector4(3, 0, 0, 0);
-                unitOffset = new Vector2(-2.75f, -1.8f);
+                unitOffset = new Vector2(-1.5f, 0);
                 break;
             case SymmetryGroup.R.p4:
-                d = new Vector4(2, 0, 0, 0);
-                unitOffset = new Vector2(-2.5f, -0.5f);
+                d = new Vector4(3, 0, 0, 0);
+                unitOffset = new Vector2(-3f, 0f);
                 break;
             case SymmetryGroup.R.p6:
                 d = new Vector4(4, 0, 0, 0);
                 unitOffset = new Vector2(-3.5f, -2.232f);
                 break;
-            case SymmetryGroup.R.pm:
-                d = new Vector4(2, 2, 0, 0);
-                unitOffset = new Vector2(-2, -1);
-                break;
             case SymmetryGroup.R.pmm:
-                d = new Vector4(2, 2, 0, 0);
-                unitOffset = new Vector2(-2, -1);
+                d = new Vector4(4, 2, 0, 0);
+                unitOffset = new Vector2(-6, -1);
                 break;
             case SymmetryGroup.R.p3m1:
                 d = new Vector4(5, 0, 0, 0);
@@ -63,69 +77,38 @@ public class WallpaperSymmetry
                 break;
             case SymmetryGroup.R.p4m:
                 d = new Vector4(4, 0, 0, 0);
-                tileSize = new Vector2(-3.26f, -4);
-                spacing = new Vector2(1, 2);
-                unitScale = 2;
-                unitOffset = new Vector2(-4.73f, 4);
+                unitOffset = new Vector2(-4, 2f);
                 break;
             case SymmetryGroup.R.p6m:
                 d = new Vector4(5, 0, 0, 0);
                 tileSize = new Vector2(0.5f, 1);
                 unitOffset = new Vector2(-4.02f, -2.63f);
                 break;
-            case SymmetryGroup.R.cm:
-                d = new Vector4(1f, 1f);
-                spacing = new Vector2(2, .5f);
-                unitOffset = new Vector2(-2, 0);
-                break;
-            case SymmetryGroup.R.pg:
-                d = new Vector4(1.5f, 1.5f);
-                unitOffset = new Vector2(-1.5f, 0);
-                break;
             case SymmetryGroup.R.pmg:
                 d = new Vector4(1.5f, 1.2f);
-                unitOffset = new Vector2(0, 0);
+                unitOffset = new Vector2(-3, -1.2f);
                 break;
             case SymmetryGroup.R.pgg:
                 d = new Vector4(1.5f, 1.2f);
-                unitOffset = new Vector2(0, 0);
+                unitOffset = new Vector2(-3, -.6f);
                 break;
             case SymmetryGroup.R.cmm:
                 d = new Vector4(1.5f, 1.2f);
-                unitOffset = new Vector2(0, 0);
+                unitOffset = new Vector2(-0.75f, -3f);
                 break;
             case SymmetryGroup.R.p31m:
                 d = new Vector4(3, 0, 0, 0);
-                unitOffset = new Vector2(-3.46f, -1.41f);
+                unitOffset = new Vector2(-3f, 1f);
                 break;
             case SymmetryGroup.R.p4g:
                 d = new Vector4(1.5f, 0, 0, 0);
-                unitOffset = new Vector2(0, 0);
+                unitOffset = new Vector2(-4.5f, -3);
                 break;
         }
 
         groupProperties = new SymmetryGroup(_group, tileSize, d); // TODO width and height don't do anything
         matrices = new List<Matrix4x4>();
-
-        switch (_group)
-        {
-            case SymmetryGroup.R.cm:
-                tileSize *= 2;
-                for (var v = 0; v < _repeatY; v++)
-                {
-                    for (var u = 0; u < _repeatX; u++)
-                    {
-                        var m = Matrix4x4.identity;
-                        m = u % 2 == 0 ? m : Matrix4x4.Scale(new Vector3(-1, 1, 1));
-                        m = v % 2 == 0 ? m : Matrix4x4.Translate(new Vector3(tileSize.x, 0, 0));
-                        matrices.Add(Matrix4x4.Translate(new Vector3(u * tileSize.x , v * tileSize.y, 0)) * m);
-                    }
-                }
-                break;
-            default:
-                Initialize();
-                break;
-        }
+        Initialize();
         
         for (var i = 0; i < matrices.Count; i++)
         {
@@ -134,13 +117,29 @@ public class WallpaperSymmetry
             matrices[i] = m;
         }
 
+        
+        // Offset all transforms so that they first transform is identity
+        // Also store a sum of all translations for later averaging
+        // var center = matrices[0].MultiplyPoint(Vector3.zero);
         for (var i = 1; i < matrices.Count; i++)
         {
             var m0 = matrices[i];
             var m = matrices[0].inverse * m0;
             matrices[i] = m;
+            // var prevCenter = center;
+            // center = m.MultiplyPoint(Vector3.zero) + prevCenter;
         }
         matrices[0] = Matrix4x4.identity;
+
+        // In this loop we offset all transforms to center them
+        // center /= matrices.Count; // Average translation
+        // var centeringTransform = Matrix4x4.Translate(-center);
+        // for (var i = 0; i < matrices.Count; i++)
+        // {
+        //     var m = matrices[i];
+        //     m = centeringTransform * m;            
+        //     matrices[i] = m;
+        // }
     }
     
     public WallpaperSymmetry(SymmetryGroup.R _group, int _repeatX, int _repeatY, 
