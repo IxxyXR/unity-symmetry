@@ -27,32 +27,28 @@ public class WallpaperSymmetry
             case SymmetryGroup.R.p1:
                 // width, skewY, skewX, height
                 d = new Vector4(2, 0, 0, 2);
-                // unitOffset = new Vector2(-2, 0);
                 unitOffset = new Vector2(0, 0);
                 break;
             case SymmetryGroup.R.p2:
                 // width, skewY, skewX, height
                 d = new Vector4(2, 0, 0, 2);
                 unitOffset = new Vector2(-2f, -2f);
-                repeatY /= 2;
                 break;
             case SymmetryGroup.R.pg:
-                d = new Vector4(1.5f, 2.4f);
-                unitOffset = new Vector2(-1.5f, 0);
-                repeatY /= 2;
+                d = new Vector4(2f, 2f);
+                unitOffset = new Vector2(-2, 0);
                 break;
             case SymmetryGroup.R.pm:
                 d = new Vector4(3, 1.2f, 0, 0);
                 unitOffset = new Vector2(-4.5f, 0);
-                repeatX /= 2;
                 break;
             case SymmetryGroup.R.cm:
                 d = new Vector4(1.5f, 1.2f, 0, 0);
-                unitOffset = new Vector2(-2.25f, 0);
+                unitOffset = new Vector2(-3f, 0);
                 break;
             case SymmetryGroup.R.p3:
                 d = new Vector4(3, 0, 0, 0);
-                unitOffset = new Vector2(-1.5f, 0);
+                unitOffset = new Vector2(-3f, 0);
                 break;
             case SymmetryGroup.R.p4:
                 d = new Vector4(3, 0, 0, 0);
@@ -60,25 +56,23 @@ public class WallpaperSymmetry
                 break;
             case SymmetryGroup.R.p6:
                 d = new Vector4(4, 0, 0, 0);
-                unitOffset = new Vector2(-3.5f, -2.232f);
+                unitOffset = new Vector2(-3f, -1.73f);
                 break;
             case SymmetryGroup.R.pmm:
-                d = new Vector4(4, 2, 0, 0);
-                unitOffset = new Vector2(-6, -1);
+                d = new Vector4(2, 2, 0, 0);
+                unitOffset = new Vector2(-3, 0);
                 break;
             case SymmetryGroup.R.p3m1:
                 d = new Vector4(5, 0, 0, 0);
-                tileSize = new Vector2(1, 0);
-                unitOffset = new Vector2(-4.25f, -2.17f);
+                unitOffset = new Vector2(-3.75f, -2.165f);
                 break;
             case SymmetryGroup.R.p4m:
                 d = new Vector4(4, 0, 0, 0);
-                unitOffset = new Vector2(-4, 2f);
+                unitOffset = new Vector2(-4, 0);
                 break;
             case SymmetryGroup.R.p6m:
                 d = new Vector4(5, 0, 0, 0);
-                tileSize = new Vector2(0.5f, 1);
-                unitOffset = new Vector2(-4.02f, -2.63f);
+                unitOffset = new Vector2(-3.75f, -2.165f);
                 break;
             case SymmetryGroup.R.pmg:
                 d = new Vector4(1.5f, 1.2f);
@@ -86,15 +80,15 @@ public class WallpaperSymmetry
                 break;
             case SymmetryGroup.R.pgg:
                 d = new Vector4(1.5f, 1.2f);
-                unitOffset = new Vector2(-3, -.6f);
+                unitOffset = new Vector2(-2.25f, -.6f);
                 break;
             case SymmetryGroup.R.cmm:
                 d = new Vector4(1.5f, 1.2f);
-                unitOffset = new Vector2(-0.75f, -3f);
+                unitOffset = new Vector2(0, -2.4f);
                 break;
             case SymmetryGroup.R.p31m:
                 d = new Vector4(3, 0, 0, 0);
-                unitOffset = new Vector2(-3f, 1f);
+                unitOffset = new Vector2(-3, 0);
                 break;
             case SymmetryGroup.R.p4g:
                 d = new Vector4(1.5f, 0, 0, 0);

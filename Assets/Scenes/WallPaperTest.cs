@@ -31,6 +31,7 @@ public class WallPaperTest : MonoBehaviour
         
     [BoxGroup("Gizmos")] public bool symmetryGizmos;
     [BoxGroup("Gizmos")] public bool domainGizmos;
+    public float inset = .01f;
     
     private WallpaperSymmetry sym;
     private List<Vector2> gizmoPath;
@@ -136,7 +137,8 @@ public class WallPaperTest : MonoBehaviour
             foreach (var m in sym.matrices)
             {
                 var points = sym.groupProperties.fundamentalRegion.points;
-                var path = points.Select(v => (Vector2)m.MultiplyPoint3x4(v)).ToList();
+                var insetPath = InsetPolygon(points.ToList(), inset);
+                var path = insetPath.Select(v => (Vector2)m.MultiplyPoint3x4(v)).ToList();
                 DrawPathGizmo(path);
             }
         }
@@ -157,5 +159,33 @@ public class WallPaperTest : MonoBehaviour
         }
         Gizmos.color = Color.blue;
         Gizmos.DrawLine(prevPoint, initialPoint);
+    }
+    
+    public static List<Vector2> InsetPolygon(List<Vector2> originalPoly, float insetAmount)
+    {
+        int Mod(int x, int m) {return (x % m + m) % m;}
+        
+        insetAmount = -insetAmount;
+        Vector2 offsetDir = Vector2.zero;
+    
+        // Create the Vector3 vertices
+        List<Vector2> offsetPoly = new List<Vector2>();
+        for (int i = 0; i < originalPoly.Count; i++)
+        {
+            if (insetAmount != 0)
+            {
+                Vector2 tangent1 = (originalPoly[(i + 1) % originalPoly.Count] - originalPoly[i]).normalized;
+                Vector2 tangent2 = (originalPoly[i] - originalPoly[Mod(i - 1, originalPoly.Count)]).normalized;
+    
+                Vector2 normal1 = new Vector2(-tangent1.y, tangent1.x).normalized;
+                Vector2 normal2 = new Vector2(-tangent2.y, tangent2.x).normalized;
+    
+                offsetDir = (normal1 + normal2) / 2;
+                offsetDir *= insetAmount / offsetDir.magnitude;
+            }
+            offsetPoly.Add(new Vector2(originalPoly[i].x - offsetDir.x, originalPoly[i].y - offsetDir.y));
+        }
+    
+        return offsetPoly;
     }
 }
