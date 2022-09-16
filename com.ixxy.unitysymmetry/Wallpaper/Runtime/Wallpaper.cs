@@ -41,77 +41,77 @@ public class Polygon
     {
         return new Polygon(new[]
         {
-            new Vector2(0f, 0f),
+            new Vector2(0, 0),
             new Vector2((float)d1x, (float)d1y),
             new Vector2((float)(d1x + d2x), (float)(d1y + d2y)),
             new Vector2((float)d2x, (float)d2y)
         }, offsetX, offsetY);
     }
     
-    public static Polygon Parallelogram2(double d1x, double d2x, double d1y, double d2y, double offsetX, double offsetY)
+    public static Polygon Square(double d1x, double d2x, double d1y, double d2y, double offsetX, double offsetY)
     {
         return new Polygon(new[]
         {
             new Vector2(0, 0),
-            new Vector2((float)d2x / 2, (float)d2y / 2),
+            new Vector2((float)d1x / 2, (float)d1y / 2),
             new Vector2((float)(d1x + d2x) / 2, (float)(d1y + d2y) / 2),
-            new Vector2((float)d1x / 2, (float)d1y / 2)
-        }, offsetX, offsetY);
-    }
-
-    public static Polygon EquilaterialTriangle(double hexSize, double offsetX, double offsetY)
-    {
-        return new Polygon(new[]
-        {
-            new Vector2(0, 0),
-            new Vector2((float)hexSize / 2 * 1 / 2, (float)(hexSize / 2 * (Math.Sqrt(3) / 2))),
-            new Vector2((float)hexSize / 2, 0),
-            new Vector2((float)hexSize / 2 * 1 / 2, (float)(-hexSize / 2 * Math.Sqrt(3) / 2))
-        }, offsetX, offsetY);
-    }
-
-    public static Polygon Hex2(double hexSize, double offsetX, double offsetY)
-    {
-        return new Polygon(new[]
-        {
-            new Vector2(0, 0),
-            new Vector2(0, (float)(hexSize / 2 * Math.Sqrt(3) / 2)),
-            new Vector2((float)hexSize / 4, (float)(hexSize / 2 * Math.Sqrt(3) / 2)),
-            new Vector2((float)(3 * hexSize / 8), (float)(hexSize * Math.Sqrt(3) / 8))
-        }, offsetX, offsetY);
-    }
-    
-    public static Polygon Tri(double hexSize, double offsetX, double offsetY)
-    {
-        return new Polygon(new[]
-        {
-            new Vector2(0, 0),
-            new Vector2((float)hexSize / 2 * 1 / 2, (float)(hexSize / 2 * (Math.Sqrt(3) / 2))),
-            new Vector2((float)hexSize / 2, 0)
-        }, offsetX, offsetY);
-    }
-    
-    public static Polygon Tri2(double d1x, double d2x, double d1y, double d2y, double offsetX, double offsetY)
-    {
-        return new Polygon(new[]
-        {
-            new Vector2(0, 0),
             new Vector2((float)d2x / 2, (float)d2y / 2),
-            new Vector2((float)(d1x + d2x) / 2, (float)(d1y + d2y) / 2)
         }, offsetX, offsetY);
     }
-    
-    public static Polygon Tri3(double hexSize, double offsetX, double offsetY)
+
+    public static Polygon Rhombus(double hexSize, double offsetX, double offsetY)
     {
         return new Polygon(new[]
         {
             new Vector2(0, 0),
+            new Vector2((float)hexSize / 2 * 1 / 2, (float)(-hexSize / 2 * Math.Sqrt(3) / 2)),
+            new Vector2((float)hexSize / 2, 0),
+            new Vector2((float)hexSize / 2 * 1 / 2, (float)(hexSize / 2 * (Math.Sqrt(3) / 2))),
+        }, offsetX, offsetY);
+    }
+
+    public static Polygon Kite(double hexSize, double offsetX, double offsetY)
+    {
+        return new Polygon(new[]
+        {
+            new Vector2(0, 0),
+            new Vector2((float)(3 * hexSize / 8), (float)(hexSize * Math.Sqrt(3) / 8)),
+            new Vector2((float)hexSize / 4, (float)(hexSize / 2 * Math.Sqrt(3) / 2)),
             new Vector2(0, (float)(hexSize / 2 * Math.Sqrt(3) / 2)),
-            new Vector2((float)(hexSize / 4), (float)(hexSize / 2 * Math.Sqrt(3) / 2))
         }, offsetX, offsetY);
     }
     
-    public static Polygon Tri4(double baseSize, double offsetX, double offsetY)
+    public static Polygon EquilateralTri(double hexSize, double offsetX, double offsetY)
+    {
+        return new Polygon(new[]
+        {
+            new Vector2(0, 0),
+            new Vector2((float)hexSize / 2, 0),
+            new Vector2((float)hexSize / 2 * 1 / 2, (float)(hexSize / 2 * (Math.Sqrt(3) / 2))),
+        }, offsetX, offsetY);
+    }
+    
+    public static Polygon RightAngleTri(double d1x, double d2x, double d1y, double d2y, double offsetX, double offsetY)
+    {
+        return new Polygon(new[]
+        {
+            new Vector2(0, 0),
+            new Vector2((float)(d1x + d2x) / 2, (float)(d1y + d2y) / 2),
+            new Vector2((float)d2x / 2, (float)d2y / 2),
+        }, offsetX, offsetY);
+    }
+    
+    public static Polygon HalfKite(double hexSize, double offsetX, double offsetY)
+    {
+        return new Polygon(new[]
+        {
+            new Vector2(0, 0),
+            new Vector2((float)(hexSize / 4), (float)(hexSize / 2 * Math.Sqrt(3) / 2)),
+            new Vector2(0, (float)(hexSize / 2 * Math.Sqrt(3) / 2)),
+        }, offsetX, offsetY);
+    }
+    
+    public static Polygon HalfRhombus(double baseSize, double offsetX, double offsetY)
     {
         return new Polygon(new[]
         {
@@ -282,7 +282,7 @@ public class SymmetryGroup
                 d2y = -d1y;
                 offsetX = tileSize.x / 2;
                 offsetY = tileSize.y / 2;
-                fundamentalRegion = Polygon.EquilaterialTriangle(hexSize, offsetX, offsetY);
+                fundamentalRegion = Polygon.Rhombus(hexSize, offsetX, offsetY);
                 center = new Vector2(tileSize.x / 2, tileSize.y / 2);
                 translationX = new Vector2((float)d1x, (float)d2x);
                 translationY = new Vector2((float)d1y, (float)d2y);
@@ -299,7 +299,7 @@ public class SymmetryGroup
                 d2y = squareSize;
                 offsetX = tileSize.x / 2;
                 offsetY = tileSize.y / 2;
-                fundamentalRegion = Polygon.Parallelogram2(d1x, d2x, d1y, d2y, offsetX, offsetY);
+                fundamentalRegion = Polygon.Square(d1x, d2x, d1y, d2y, offsetX, offsetY);
                 center = new Vector2(
                     tileSize.x / 2,
                     tileSize.y / 2
@@ -320,7 +320,7 @@ public class SymmetryGroup
                 d2y = -d1y;
                 offsetX = tileSize.x / 2;
                 offsetY = tileSize.y / 2;
-                fundamentalRegion = Polygon.Hex2(hexSize, offsetX, offsetY);
+                fundamentalRegion = Polygon.Kite(hexSize, offsetX, offsetY);
                 center = new Vector2(
                     tileSize.x / 2,
                     tileSize.y / 2
@@ -361,7 +361,7 @@ public class SymmetryGroup
                 d2y = -d1y;
                 offsetX = tileSize.x / 2;
                 offsetY = tileSize.y / 2;
-                fundamentalRegion = Polygon.Tri(hexSize, offsetX, offsetY);
+                fundamentalRegion = Polygon.EquilateralTri(hexSize, offsetX, offsetY);
                 center = new Vector2(
                     tileSize.x / 2,
                     tileSize.y / 2
@@ -387,7 +387,7 @@ public class SymmetryGroup
                 d2y = squareSize;
                 offsetX = tileSize.x / 2;
                 offsetY = tileSize.y / 2;
-                fundamentalRegion = Polygon.Tri2(d1x, d2x, d1y, d2y, offsetX, offsetY);
+                fundamentalRegion = Polygon.RightAngleTri(d1x, d2x, d1y, d2y, offsetX, offsetY);
                 center = new Vector2(
                     tileSize.x / 2,
                     tileSize.y / 2
@@ -415,7 +415,7 @@ public class SymmetryGroup
                 d2y = -d1y;
                 offsetX = tileSize.x / 2;
                 offsetY = tileSize.y / 2;
-                fundamentalRegion = Polygon.Tri3(hexSize, offsetX, offsetY);
+                fundamentalRegion = Polygon.HalfKite(hexSize, offsetX, offsetY);
                 center = new Vector2(
                     tileSize.x / 2,
                     tileSize.y / 2
@@ -555,7 +555,7 @@ public class SymmetryGroup
                 double baseSize = d.x; // 300
                 offsetX = tileSize.x / 2 - baseSize / 2;
                 offsetY = tileSize.y / 2;
-                fundamentalRegion = Polygon.Tri4(baseSize, offsetX, offsetY);
+                fundamentalRegion = Polygon.HalfRhombus(baseSize, offsetX, offsetY);
                 center = new Vector2(
                     (float)(3 * baseSize / 4 + offsetX),
                     (float)(baseSize * Math.Sqrt(3) / 4 + offsetY)
