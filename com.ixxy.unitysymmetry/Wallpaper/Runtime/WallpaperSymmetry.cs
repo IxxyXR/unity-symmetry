@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
-
 
 public class WallpaperSymmetry
 {
@@ -10,7 +8,6 @@ public class WallpaperSymmetry
     private double unitScale;
     private Vector2 unitOffset;
     private Vector2 spacing;
-    private float finalScale;
     
     public readonly SymmetryGroup groupProperties;
     public readonly List<Matrix4x4> matrices;
@@ -22,7 +19,6 @@ public class WallpaperSymmetry
         var tileSize = Vector2.one;
         unitScale = 1;
         spacing = Vector2.one;
-        finalScale = _finalScale;
 
         Vector4 d = Vector4.zero;
 
@@ -110,14 +106,6 @@ public class WallpaperSymmetry
         matrices = new List<Matrix4x4>();
         Initialize();
         
-        for (var i = 0; i < matrices.Count; i++)
-        {
-            var m0 = matrices[i];
-            var m = Matrix4x4.Scale(Vector3.one * finalScale) * m0;
-            matrices[i] = m;
-        }
-
-        
         // Offset all transforms so that they first transform is identity
         // Also store a sum of all translations for later averaging
         // var center = matrices[0].MultiplyPoint(Vector3.zero);
@@ -130,6 +118,13 @@ public class WallpaperSymmetry
             // center = m.MultiplyPoint(Vector3.zero) + prevCenter;
         }
         matrices[0] = Matrix4x4.identity;
+
+        for (var i = 0; i < matrices.Count; i++)
+        {
+            var m0 = matrices[i];
+            var m = Matrix4x4.Scale(Vector3.one * _finalScale) * m0;
+            matrices[i] = m;
+        }
 
         // In this loop we offset all transforms to center them
         // center /= matrices.Count; // Average translation
@@ -152,7 +147,6 @@ public class WallpaperSymmetry
         _unitScale = 1f;
         unitOffset = _unitOffset * (float)_unitScale;
         spacing = _spacing * (float)_unitScale;
-        finalScale = _finalScale;
         groupProperties = new SymmetryGroup(_group, _tileSize * (float)_unitScale, d * (float)_unitScale); // TODO width and height don't do anything
         matrices = new List<Matrix4x4>();
 
