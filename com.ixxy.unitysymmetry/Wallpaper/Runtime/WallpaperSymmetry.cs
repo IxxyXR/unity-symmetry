@@ -8,11 +8,15 @@ public class WallpaperSymmetry
     private double unitScale;
     private Vector2 unitOffset;
     private Vector2 spacing;
-    
+    private Vector4 d;
+
     public readonly SymmetryGroup groupProperties;
     public readonly List<Matrix4x4> matrices;
 
-    public WallpaperSymmetry(SymmetryGroup.R _group, int _repeatX, int _repeatY, float _finalScale)
+    public Vector2 UnitOffset => unitOffset;
+    public Vector4 D => d;
+
+    public WallpaperSymmetry(SymmetryGroup.R _group, int _repeatX, int _repeatY, float _finalScale, float _w, float _h, float _sx, float _sy)
     {
         repeatX = _repeatX;
         repeatY = _repeatY;
@@ -20,83 +24,100 @@ public class WallpaperSymmetry
         unitScale = 1;
         spacing = Vector2.one;
 
-        Vector4 d = Vector4.zero;
-
         switch (_group)
         {
             case SymmetryGroup.R.p1:
+                // Degrees of freedom: 4
                 // width, skewY, skewX, height
-                d = new Vector4(2, 0, 0, 2);
+                d = new Vector4(_w, _sx, _sy, _h);
                 unitOffset = new Vector2(0, 0);
                 break;
             case SymmetryGroup.R.p2:
+                // Degrees of freedom: 6
                 // width, skewY, skewX, height
-                d = new Vector4(2, 0, 0, 2);
-                unitOffset = new Vector2(-2f, -2f);
+                d = new Vector4(_w * 2, _sx, _sy, _h * 2);
+                unitOffset = new Vector2(-d[0], -d[1]);
                 break;
             case SymmetryGroup.R.pg:
-                d = new Vector4(2f, 2f);
-                unitOffset = new Vector2(-2, 0);
+                // Degrees of freedom: 4
+                // width, height
+                d = new Vector4(_w * 2, _h * 2);
+                unitOffset = new Vector2(-d[0], 0);
                 break;
             case SymmetryGroup.R.pm:
-                d = new Vector4(3, 1.2f, 0, 0);
-                unitOffset = new Vector2(-4.5f, 0);
+                // Degrees of freedom: 4
+                // width, height
+                d = new Vector4(_w * 3, _h * 1.2f, 0, 0);
+                unitOffset = new Vector2(-d[0], 0);
                 break;
             case SymmetryGroup.R.cm:
-                d = new Vector4(1.5f, 1.2f, 0, 0);
-                unitOffset = new Vector2(-3f, 0);
+                // Degrees of freedom: 4
+                d = new Vector4(_w * 1.5f, _h * 1.2f, 0, 0);
+                unitOffset = new Vector2(-d[0], 0);
                 break;
             case SymmetryGroup.R.p3:
-                d = new Vector4(3, 0, 0, 0);
-                unitOffset = new Vector2(-3f, 0);
+                // Degrees of freedom: 4
+                d = new Vector4(_w * 4, 0, 0, 0);
+                unitOffset = new Vector2(-d[0]*.75f, -Mathf.Sqrt(3)*(d[0]/4));
                 break;
             case SymmetryGroup.R.p4:
-                d = new Vector4(3, 0, 0, 0);
-                unitOffset = new Vector2(-3f, 0f);
+                // Degrees of freedom: 4
+                d = new Vector4(_w * 3, 0, 0, 0);
+                unitOffset = new Vector2(-d[0], 0);
                 break;
             case SymmetryGroup.R.p6:
-                d = new Vector4(4, 0, 0, 0);
-                unitOffset = new Vector2(-3f, -1.73f);
+                // Degrees of freedom: 4
+                d = new Vector4(_w * 4, 0, 0, 0);
+                unitOffset = new Vector2(-d[0]*.75f, -Mathf.Sqrt(3)*(d[0]/4));
                 break;
             case SymmetryGroup.R.pmm:
-                d = new Vector4(2, 2, 0, 0);
-                unitOffset = new Vector2(-3, 0);
+                // Degrees of freedom: 5
+                d = new Vector4(_w * 2, _h * 2, 0, 0);
+                unitOffset = new Vector2(-d[0], 0);
                 break;
             case SymmetryGroup.R.p3m1:
-                d = new Vector4(5, 0, 0, 0);
-                unitOffset = new Vector2(-3.75f, -2.165f);
+                // Degrees of freedom: 4
+                d = new Vector4(_w * 5, 0, 0, 0);
+                unitOffset = new Vector2(-d[0] * .75f, -d[0] * .43333f);
                 break;
             case SymmetryGroup.R.p4m:
-                d = new Vector4(4, 0, 0, 0);
-                unitOffset = new Vector2(-4, 0);
+                // Degrees of freedom: 4
+                d = new Vector4(_w * 4, 0, 0, 0);
+                unitOffset = new Vector2(-d[0], 0);
                 break;
             case SymmetryGroup.R.p6m:
-                d = new Vector4(5, 0, 0, 0);
-                unitOffset = new Vector2(-3.75f, -2.165f);
+                // Degrees of freedom: 4
+                d = new Vector4(_w * 5, 0, 0, 0);
+                unitOffset = new Vector2(-d[0] * .75f, -d[0] * .43333f);
                 break;
             case SymmetryGroup.R.pmg:
-                d = new Vector4(1.5f, 1.2f);
-                unitOffset = new Vector2(-3, -1.2f);
+                // Degrees of freedom: 5
+                d = new Vector4(_w * 1.5f, _h * 1.2f);
+                unitOffset = new Vector2(-d[0] * 2, -d[1]);
                 break;
             case SymmetryGroup.R.pgg:
-                d = new Vector4(1.5f, 1.2f);
-                unitOffset = new Vector2(-2.25f, -.6f);
+                // Degrees of freedom: 5
+                d = new Vector4(_w * 1.5f, _h * 1.2f);
+                unitOffset = new Vector2(-d[0] * 1.5f, -d[1]/2f);
                 break;
             case SymmetryGroup.R.cmm:
-                d = new Vector4(1.5f, 1.2f);
-                unitOffset = new Vector2(0, -2.4f);
+                // Degrees of freedom: 5
+                d = new Vector4(_w * 1.5f, _h * 1.2f);
+                unitOffset = new Vector2(-d[0] / 2f, -d[1] * 2);
                 break;
             case SymmetryGroup.R.p31m:
-                d = new Vector4(3, 0, 0, 0);
-                unitOffset = new Vector2(-3, 0);
+                // Degrees of freedom: 4
+                d = new Vector4(_w * 3, 0, 0, 0);
+                unitOffset = new Vector2(-d[0], 0);
                 break;
             case SymmetryGroup.R.p4g:
-                d = new Vector4(1.5f, 0, 0, 0);
-                unitOffset = new Vector2(-4.5f, -3);
+                // Degrees of freedom: 4
+                d = new Vector4(_w * 1.5f, 0, 0, 0);
+                unitOffset = new Vector2(-d[0] * 3, -d[0] * 2);
                 break;
         }
 
-        groupProperties = new SymmetryGroup(_group, tileSize, d); // TODO width and height don't do anything
+        groupProperties = new SymmetryGroup(_group, tileSize, d);
         matrices = new List<Matrix4x4>();
         Initialize();
         
