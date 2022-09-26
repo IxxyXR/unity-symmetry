@@ -22,6 +22,11 @@ public class WallPaperTest : MonoBehaviour
     public Vector2 Spacing = Vector2.one;
     public Vector4 d;
 
+    [Header("Grid")]
+    public float width = 1;
+    public float height = 1;
+    public float skewX = 0;
+    public float skewY = 0;
 
     [Header("Transform Each")]
     public Vector3 PositionEach = Vector3.zero;
@@ -32,7 +37,7 @@ public class WallPaperTest : MonoBehaviour
     [BoxGroup("Gizmos")] public bool symmetryGizmos;
     [BoxGroup("Gizmos")] public bool domainGizmos;
     public float inset = .01f;
-    
+
     private WallpaperSymmetry sym;
     private List<Vector2> gizmoPath;
 
@@ -40,7 +45,9 @@ public class WallPaperTest : MonoBehaviour
     {
         if (SimpleSettingsOnly)
         {
-            sym = new WallpaperSymmetry(group, RepeatX, RepeatY, scale);
+            sym = new WallpaperSymmetry(group, RepeatX, RepeatY, scale, width, height, skewX, skewY);
+            UnitOffset = sym.UnitOffset;
+            d = sym.D;
         }
         else
         {
@@ -112,52 +119,59 @@ public class WallPaperTest : MonoBehaviour
             
         if (symmetryGizmos)
         {
-            if (gizmoPath == null || gizmoPath.Count == 0)
-            {
                 gizmoPath = new List<Vector2>
                 {
-                    new Vector2(-0.25f, -0.5f),
-                    new Vector2(0.25f, -0.5f),
-                    new Vector2(0.25f, -0.2f),
-                    new Vector2(-0.05f, -0.2f),
-                    new Vector2(-0.05f, 0.5f),
-                    // new Vector2(-0.25f, 0.5f),
+                    new Vector2(0, 0),
+                    new Vector2(0, 0.75f),
+                    new Vector2(0.1f, 0.75f),
+                    new Vector2(0.1f, 0.3f),
+                    new Vector2(0.3f, 0.3f),
+                    new Vector2(0.3f, 0),
                 };
-            }
-            
+
+            bool initial = true;
             foreach (var m in sym.matrices)
             {
                 var path = gizmoPath.Select(v => (Vector2)m.MultiplyPoint3x4(v)).ToList();
-                DrawPathGizmo(path);
+                DrawPathGizmo(path, initial);
+                initial = false;
             }
         }
         
         if (domainGizmos)
         {
+            bool initial = true;
             foreach (var m in sym.matrices)
             {
                 var points = sym.groupProperties.fundamentalRegion.points;
                 var insetPath = InsetPolygon(points.ToList(), inset);
                 var path = insetPath.Select(v => (Vector2)m.MultiplyPoint3x4(v)).ToList();
-                DrawPathGizmo(path);
+                DrawPathGizmo(path, initial);
+                initial = false;
             }
         }
     }
 
-    private void DrawPathGizmo(List<Vector2> path)
+    private void DrawPathGizmo(List<Vector2> path, bool initial)
     {
         var initialPoint = new Vector3(path[0].x, path[0].y, 0);
         var prevPoint = initialPoint;
         for (int i = 1; i < path.Count; i++)
         {
-            if (i==1) Gizmos.color = Color.red;
-            else Gizmos.color = Color.yellow;
+            if (initial)
+            {
+                Gizmos.color = Color.white;
+            }
+            else if (i==1) Gizmos.color = Color.red;
+            else
+            {
+                Gizmos.color = Color.yellow;
+            }
             
             var currentPoint = new Vector3(path[i].x, path[i].y, 0);
             Gizmos.DrawLine(prevPoint, currentPoint);
             prevPoint = currentPoint;
         }
-        Gizmos.color = Color.blue;
         Gizmos.DrawLine(prevPoint, initialPoint);
     }
     

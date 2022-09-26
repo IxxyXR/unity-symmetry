@@ -152,23 +152,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6119fd20cd3976f49b0ea4b79c1bdefc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SimpleSettingsOnly: 0
-  group: 10
+  SimpleSettingsOnly: 1
+  group: 4
   RepeatX: 2
   RepeatY: 2
   scale: 1
   TileSize: {x: 1, y: 1}
   UnitScale: 1
-  UnitOffset: {x: -4, y: 0}
+  UnitOffset: {x: -4.17, y: -2.4075506}
   Spacing: {x: 1, y: 1}
-  d: {x: 4, y: 0, z: 0, w: 0}
+  d: {x: 5.56, y: 0, z: 0, w: 0}
+  width: 1.39
+  height: 1
+  skewX: 0
+  skewY: 0
   PositionEach: {x: 0, y: 0, z: 0}
   RotationEach: {x: 0, y: 0, z: 0}
   ScaleEach: {x: 0, y: 0, z: 0}
-  ApplyAfter: 0
-  symmetryGizmos: 0
+  ApplyAfter: 1
+  symmetryGizmos: 1
   domainGizmos: 1
-  inset: -0.1
+  inset: 0
 --- !u!23 &1605842914
 MeshRenderer:
   m_ObjectHideFlags: 0

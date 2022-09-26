@@ -3,6 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+public static class EnumExtension {
+    public static IEnumerable<(T item, int index)> WithIndex<T>(this IEnumerable<T> self)
+        => self.Select((item, index) => (item, index));
+}
+
 public class PointSymmetry {
     
     [Serializable]
@@ -36,8 +41,9 @@ public class PointSymmetry {
 
     private List<Matrix4x4> getRotations(float angle)
     {
+        var count = family == Family.Sn ? 2 * n : n;
         var rotations = new List<Matrix4x4>();
-        for (int i = 0; i < n; i++)
+        for (int i = 0; i < count; i++)
         {
             Vector3 centerOfRotation = Vector3.forward * radius;
             Vector3 rotationAxis = Vector3.up;
@@ -52,7 +58,7 @@ public class PointSymmetry {
     {
         return _matrices.Select(m => Matrix4x4.Rotate(Quaternion.Euler(axis*angle)) * m).ToList();
     }
-    
+
     private List<Matrix4x4> reflectAll(List<Matrix4x4> _matrices, Vector3 reflection, bool rotate=false)
     {
         var tr = Matrix4x4.Scale(reflection);
@@ -65,7 +71,7 @@ public class PointSymmetry {
         family = pointGroupFamily;
         n = _n;
         radius = _radius;
-        float angle = 360 / n;
+        float angle = 360f / n;
 
         switch (pointGroupFamily)
         {
@@ -81,10 +87,16 @@ public class PointSymmetry {
                 matrices.AddRange(reflectAll(getRotations(angle), verticalReflection));
                 break;
             case Family.Sn:
-                matrices = getRotations(angle * 2);
-                var m1 = getRotations(angle * 2).Select(m => Matrix4x4.Rotate(Quaternion.Euler(0, angle, 0)) * m)
-                    .ToList();
-                matrices.AddRange(reflectAll(m1, verticalReflection));
+                angle /= 2;
+                matrices = getRotations(angle);
+                for (var i = 0; i < matrices.Count; i++)
+                {
+                    if (i % 2 != 0)
+                    {
+                        var m = matrices[i];
+                        matrices[i] = Matrix4x4.Scale(verticalReflection) * m;
+                    }
+                }
                 break;
             case Family.Dn:
                 matrices = getRotations(angle);

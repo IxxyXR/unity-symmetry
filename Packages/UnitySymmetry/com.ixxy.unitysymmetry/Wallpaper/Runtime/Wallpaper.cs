@@ -400,6 +400,7 @@ public class SymmetryGroup
                 cosetReps[2] = setRotate(270, center);
 
                 cosetReps[3] = setReflectionMatrix(fundamentalRegion.points[1], fundamentalRegion.points[2]);
+                cosetReps[3] = Matrix4x4.Translate(Vector3.down * (float)squareSize) * cosetReps[3];
                 for (int i = 4; i < 7; i++)
                 {
                     cosetReps[i] = cosetReps[3];
@@ -467,7 +468,6 @@ public class SymmetryGroup
                 translationX = new Vector2((float)dx, (float)dx);
                 translationY = new Vector2((float)dy, (float)-dy);
                 cosetReps = new Matrix4x4[1];
-
                 cosetReps[0] = setReflectionMatrix(fundamentalRegion.points[0], fundamentalRegion.points[3]);
                 break;
 
@@ -529,6 +529,7 @@ public class SymmetryGroup
                 cosetReps[1] = setRotate(180, new Vector2((float)(dx / 2 + offsetX), (float)(0 + offsetY)));
                 cosetReps[2] = cosetReps[1];
                 cosetReps[2] = cosetReps[0] * cosetReps[2];
+                cosetReps[2] = Matrix4x4.Translate(new Vector3((float)-dx * 2, 0)) * cosetReps[2];
                 break;
 
             case R.cmm:
@@ -545,7 +546,7 @@ public class SymmetryGroup
                 translationY = new Vector2((float)(2 * dy), (float)(-2 * dy));
                 cosetReps = new Matrix4x4[3];
 
-                cosetReps[0] = setReflectionMatrix(fundamentalRegion.points[1], fundamentalRegion.points[2]);
+                cosetReps[0] = setReflectionMatrix(fundamentalRegion.points[0], fundamentalRegion.points[1]);
                 cosetReps[1] = setRotate(180, new Vector2((float)(dx / 2 + offsetX), (float)(0 + offsetY)));
                 cosetReps[2] = cosetReps[0];
                 cosetReps[2] = cosetReps[1] * cosetReps[2];
@@ -595,7 +596,6 @@ public class SymmetryGroup
                     cosetReps[i] = cosetReps[i - 4];
                     cosetReps[i] = cosetReps[3] * cosetReps[i];
                 }
-
                 break;
         }
     }
