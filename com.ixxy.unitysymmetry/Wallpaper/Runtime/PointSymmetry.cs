@@ -117,13 +117,15 @@ public class PointSymmetry {
                 matrices = matricesForPolyhedra(tetra);
                 break;
             case Family.Th:
-                var tetraH = Cube();
+                var tetraH = Tetrahedron();
                 matrices = matricesForPolyhedra(tetraH);
+                matrices.AddRange(reflectAll(matrices, horizontalReflection));
                 break;
             case Family.Td:
                 var tetraD = Tetrahedron();
                 matrices = matricesForPolyhedra(tetraD);
-                matrices.AddRange(reflectAll(matrices, horizontalReflection));
+                var tr = Matrix4x4.Scale(horizontalReflection);
+                matrices.AddRange(matrices.Select(m => m * tr).ToList());
                 break;
             case Family.O:
                 var octa = Octahedron();
