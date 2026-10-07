@@ -1,6 +1,6 @@
 # Unity Symmetry
 
-The runtime generators expose a `List<Matrix4x4> matrices`. Apply each matrix to the same source mesh or object transform. Slot zero is identity for point, helical, space-group and rod-group symmetry.
+The runtime generators expose a `List<Matrix4x4> matrices`. Apply each matrix to the same source mesh or object transform. Slot zero is identity for point, helical, space-group, rod-group and layer-group symmetry.
 
 ## Helical symmetry
 
@@ -54,6 +54,31 @@ python Tools/generate_rod_groups.py
 ```
 
 Attribution and source revision are in `Third Party Notices.md`.
+
+## Layer-group symmetry
+
+```csharp
+var symmetry = new LayerGroupSymmetry(
+    number: 52, repeats: new Vector2Int(3, 3), cellSize: 2f);
+```
+
+`number` is the international layer-group number, from 1 to 80. The generator uses conventional general-position operations from PyXtal. These include in-plane rotations and translations, reflections across the layer, and in-plane screw or glide operations that exchange the two sides of the layer. `name` gives the crystallographic symbol.
+
+`repeats` gives positive cell counts along the two lattice vectors in local XY. The grid starts at cell (0, 0). `cellSize` is the positive, uniform in-plane edge length; it does not scale the source's Z distance from the layer. Trigonal and hexagonal groups (65–80) use a 120-degree a/b basis. Other groups use orthogonal, equal-length in-plane axes. There is no repetition along Z.
+
+Matrix order is cell first (x, then y), operation second, with exact identity in slot zero. Matrices transform the entire source, with no vertex wrapping or merging coincident copies at special positions. A source offset from Z=0 shows the operations that exchange the sides of the layer.
+
+`LayerGroupCatalog.GetCrystalSystem(number)` returns one of six systems: triclinic, monoclinic, orthorhombic, tetragonal, trigonal and hexagonal. `GetPresets(system)` returns 31 curated presets across those systems; `GetName(number)` returns the crystallographic symbol. All 80 group numbers remain supported.
+
+The example project contains `Assets/Scenes/Layer Group Test.unity`. Select its Layer Group Symmetry object to choose a category and preset, view the live preview, adjust repeats and cell size, or select any group number in the advanced field. The demo stores only the group number. Its default is group 52 (`p4/n`), with an off-plane motif to show through-layer glides, and eight operations across nine cells, producing 72 copies.
+
+To regenerate the static table from the pinned MIT-licensed PyXtal source, using only Python's standard library:
+
+```sh
+python Tools/generate_layer_groups.py
+```
+
+The Unity package has no Python runtime dependency. Attribution and source revision are in `Third Party Notices.md`.
 
 ## Space-group data
 

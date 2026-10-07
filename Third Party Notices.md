@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # PyXtal
 
-RodGroupData.cs contains general-position operations from the PyXtal rod-group database.
+RodGroupData.cs and LayerGroupData.cs contain general-position operations from the PyXtal rod- and layer-group databases.
 Source: https://github.com/qzhu2017/PyXtal/tree/fbeb69cd9914cf7703604bc17d26c3b9b45aee49
 
 MIT License
