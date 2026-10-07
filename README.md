@@ -1,6 +1,6 @@
 # Unity Symmetry
 
-The runtime generators expose a `List<Matrix4x4> matrices`. Apply each matrix to the same source mesh or object transform. Slot zero is identity for point, helical, space-group, rod-group, layer-group and frieze symmetry.
+The runtime generators expose a `List<Matrix4x4> matrices`. Apply each matrix to the same source mesh or object transform. Slot zero is identity for point, helical, space-group, rod-group, layer-group, frieze and general line-group symmetry.
 
 ## Helical symmetry
 
@@ -104,6 +104,42 @@ The enum follows International Tables for Crystallography, Volume E numbering:
 Mirrors perpendicular to the strip lie at X=0 for the first period; parallel mirrors lie at Y=0. For p2mg, the glide advances by half a period and the half-turn centers are offset by a quarter period from the perpendicular mirrors.
 
 The example project contains `Assets/Scenes/Frieze Test.unity`. Its inspector offers all seven groups in one selector, adjustable repeats and period, and a live model preview. It starts with p2mg across six periods, producing 24 copies. An asymmetric motif offset from the strip axis makes the mirror and glide operations visible. The runtime is implemented directly from the seven group definitions, with no database or external dependency.
+
+## General line-group symmetry
+
+```csharp
+var symmetry = new LineGroupSymmetry(
+    LineGroupSymmetry.Family.ScrewHalfTurns,
+    n: 5, repeats: 8, advance: 1.1f, angleDegrees: 27f);
+```
+
+The generator implements the thirteen line-group families in Damnjanovic and Milosevic, *Line Groups in Physics* (2010), Table 2.2. The local line axis is Z. Unlike crystallographic rod groups, `n` can be any positive axial rotation order, including fivefold and sevenfold. It is the order of the pure axial rotation subgroup, so each step includes n rotations of the motif.
+
+`repeats` is a positive count of generalized steps, beginning at zero. `advance` is the positive distance along Z per step. The general screw families (1 and 5) use the supplied twist angle; clockwise and counterclockwise twists are allowed. `UsesFreeAngle(family)` identifies these two families. For other families the angle parameter is ignored and the family determines the compatible operation:
+
+| Family | Operation along Z | Additional motif symmetry | Copies per step |
+|---|---|---|---|
+| 1 ScrewRotations | Free-angle screw | Axial rotations | n |
+| 2 TranslationRotoreflection | Translation | Rotoreflection | 2n |
+| 3 TranslationHorizontalMirror | Translation | Transverse mirror | 2n |
+| 4 HalfStepHorizontalMirror | 180/n degree screw | Transverse mirror | 2n |
+| 5 ScrewHalfTurns | Free-angle screw | Transverse half turns | 2n |
+| 6 TranslationVerticalMirrors | Translation | Longitudinal mirrors | 2n |
+| 7 GlideRotations | Longitudinal glide | Axial rotations | n |
+| 8 HalfStepVerticalMirrors | 180/n degree screw | Longitudinal mirrors | 2n |
+| 9 TranslationDiagonalMirrors | Translation | Diagonal mirrors and half turns | 4n |
+| 10 GlideRotoreflection | Longitudinal glide | Rotoreflection | 2n |
+| 11 TranslationFullMirrors | Translation | Longitudinal and transverse mirrors | 4n |
+| 12 GlideHorizontalMirror | Longitudinal glide | Transverse mirror | 2n |
+| 13 HalfStepFullMirrors | 180/n degree screw | Full mirrors and half turns | 4n |
+
+Generalized steps are not always full translation periods. A glide alternates between reflecting and not reflecting; two steps give a pure translation by twice `advance`. The fixed half-step screws likewise give a pure translation after two steps, combined with an axial rotation already in the motif symmetry. A freely chosen screw twist need not have a pure translation period, so those families can also represent incommensurate helices.
+
+Matrices are ordered by step, motif-symmetry coset, then axial rotation. Slot zero is exact identity. The finite step window transforms the whole motif without wrapping vertices or merging coincident copies; it is a bounded sample of the infinite group.
+
+The example project contains `Assets/Scenes/Line Group Test.unity`, with one thirteen-family selector, adjustable axial order, step distance and step count, and a live preview. Twist is editable only for the two free-angle families. The default has fivefold screw-and-half-turn symmetry with eight steps, producing 80 copies. The implementation uses analytic generators, with no symmetry database or external runtime dependency.
+
+Reference: https://doi.org/10.1007/978-3-642-11172-3
 
 ## Space-group data
 
