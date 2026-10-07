@@ -25,7 +25,13 @@ var symmetry = new SpaceGroupSymmetry(
 
 `repeats` gives positive cell counts along a, b and c. The grid starts at cell (0, 0, 0), and each cell contains the complete set of group operations. Matrix order is cell first (x, then y, then z), operation second. Matrices are affine transforms of the source; they do not wrap vertices into cell boundaries or merge coincident copies at special positions.
 
-The example project contains `Assets/Scenes/Space Group Test.unity`. Its `SpaceGroupTest` component exposes group number, repeats and cell size, and displays the group name, setting and copy count. It starts with group 19 (`P2_12_12_1`), whose four operations across eight cells produce 32 copies.
+The example project contains `Assets/Scenes/Space Group Test.unity`. Its `SpaceGroupTest` inspector offers seven crystal systems and 2–6 named presets per system, alongside a live model preview. An advanced number field selects any of the 230 groups. Repeats and cell size remain adjustable; group name, setting and copy count are displayed. It starts with group 19 (`P2_12_12_1`), whose four operations across eight cells produce 32 copies.
+
+## Space-group selection
+
+`SpaceGroupCatalog.GetCrystalSystem(number)` classifies any group into the seven conventional crystal systems. `GetPresets(system)` returns a small collection of group numbers and descriptive labels; `GetName(number)` returns the crystallographic symbol. The catalog is available to runtime UI consumers without any Editor dependency.
+
+The preset selection covers rotations, mirrors, inversion, screw axes, glide planes and centered lattices. It does not restrict the generator: all 230 group numbers remain supported. The demo stores only the selected group number; category and preset are derived from it.
 
 ## Space-group data
 

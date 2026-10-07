@@ -61,6 +61,11 @@ public class SpaceGroupTest : MonoBehaviour
 
         if (mesh == null) return;
 
+        DrawInstances(mesh, material, GetDrawMatrices());
+    }
+
+    public List<Matrix4x4> GetDrawMatrices()
+    {
         var matrices = new List<Matrix4x4>();
         var transformBefore = Matrix4x4.TRS(Position, Quaternion.Euler(Rotation), Scale);
         var cumulativeTransform = Matrix4x4.TRS(PositionEach, Quaternion.Euler(RotationEach), ScaleEach);
@@ -73,7 +78,7 @@ public class SpaceGroupTest : MonoBehaviour
             );
             currentCumulativeTransform *= cumulativeTransform;
         }
-        DrawInstances(mesh, material, matrices);
+        return matrices;
     }
 
     private List<List<T>> Split<T> (List<T> source, int size)
