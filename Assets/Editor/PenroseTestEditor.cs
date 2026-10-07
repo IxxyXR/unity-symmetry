@@ -11,7 +11,8 @@ public sealed class PenroseTestEditor : Editor
     {
         serializedObject.Update();
         var demo = (PenroseTest)target;
-        EditorGUILayout.LabelField("Tiles / motifs", demo.TileCount.ToString());
+        EditorGUILayout.LabelField("Tiles", demo.TileCount.ToString());
+        EditorGUILayout.LabelField("Motif transforms", demo.TransformCount.ToString());
         EditorGUILayout.LabelField("Clipped boundary tiles", demo.BoundaryTileCount.ToString());
         DrawPropertiesExcluding(serializedObject, "m_Script");
         if (serializedObject.ApplyModifiedProperties()) SceneView.RepaintAll();
@@ -40,7 +41,7 @@ public sealed class PenroseTestEditor : Editor
 
         var mesh = filter.sharedMesh;
         var matrices = demo.GetDrawMatrices();
-        var bounds = new Bounds(matrices[0].MultiplyPoint3x4(mesh.bounds.center), Vector3.zero);
+        var bounds = demo.OutlineMesh.bounds;
         foreach (var matrix in matrices)
         {
             for (var corner = 0; corner < 8; corner++)
@@ -60,7 +61,6 @@ public sealed class PenroseTestEditor : Editor
             preview.lights[0].intensity = 1f;
             preview.lights[0].transform.rotation = Quaternion.Euler(50, 50, 0);
         }
-        if (demo.showOutlines) bounds.Encapsulate(demo.OutlineMesh.bounds);
         var radius = Mathf.Max(bounds.extents.magnitude, 0.01f);
         preview.camera.orthographicSize = radius * 1.1f / Mathf.Min(1f, rect.width / rect.height);
         preview.camera.farClipPlane = radius * 10f + 10f;

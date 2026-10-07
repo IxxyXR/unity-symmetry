@@ -7,11 +7,13 @@ public sealed class PenroseTest : MonoBehaviour
 {
     [Range(0, 7)] public int subdivisions = 4;
     [Min(0.01f)] public float radius = 5f;
+    public PenroseTiling.TileSelection tileSelection = PenroseTiling.TileSelection.Both;
     public bool showOutlines = true;
     public bool showMotifs = true;
     [Range(0.01f, 0.5f)] public float motifSize = 0.12f;
 
     public int TileCount => tiling.tiles.Count;
+    public int TransformCount => tiling.matrices.Count;
     public int BoundaryTileCount { get; private set; }
     public Mesh OutlineMesh => outlineMesh;
     public Material OutlineMaterial => outlineMaterial;
@@ -24,7 +26,7 @@ public sealed class PenroseTest : MonoBehaviour
 
     private void OnValidate()
     {
-        tiling = new PenroseTiling(subdivisions, radius);
+        tiling = new PenroseTiling(subdivisions, radius, tileSelection);
         if (outlineMesh != null) DestroyImmediate(outlineMesh);
         outlineMesh = new Mesh { name = "Penrose tile outlines", hideFlags = HideFlags.HideAndDontSave };
         outlineMesh.indexFormat = IndexFormat.UInt32;
