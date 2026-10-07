@@ -6,6 +6,7 @@ using UnityEngine;
 public sealed class PenroseTiling
 {
     public enum Kind { Thin, Thick }
+    public enum TileSelection { Both, Thin, Thick }
 
     public readonly struct Tile
     {
@@ -30,7 +31,8 @@ public sealed class PenroseTiling
 
     /// <param name="subdivisions">Nonnegative subdivision count; each level increases tile density.</param>
     /// <param name="radius">Positive circumradius of the decagonal seed patch in local XY.</param>
-    public PenroseTiling(int subdivisions, float radius)
+    /// <param name="tileSelection">Tile types receiving placement transforms; tile geometry remains complete.</param>
+    public PenroseTiling(int subdivisions, float radius, TileSelection tileSelection = TileSelection.Both)
     {
         if (subdivisions < 0) throw new ArgumentOutOfRangeException(nameof(subdivisions));
         if (radius <= 0 || float.IsNaN(radius) || float.IsInfinity(radius))
@@ -97,6 +99,8 @@ public sealed class PenroseTiling
 
         foreach (var tile in tiles)
         {
+            if (tileSelection == TileSelection.Thin && tile.kind != Kind.Thin
+                || tileSelection == TileSelection.Thick && tile.kind != Kind.Thick) continue;
             var center = Vector2.zero;
             foreach (var index in tile.indices) center += vertices[index];
             center /= tile.indices.Length;
