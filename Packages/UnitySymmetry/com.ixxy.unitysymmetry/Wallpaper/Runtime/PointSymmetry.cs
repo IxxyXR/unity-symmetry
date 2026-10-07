@@ -147,6 +147,14 @@ public class PointSymmetry {
                 break;
         }
 
+        // Use the first placement as the reference frame, as in WallpaperSymmetry.
+        // Every point group then has an unchanged main pointer in slot zero.
+        var firstInverse = matrices[0].inverse;
+        for (var i = 1; i < matrices.Count; i++)
+        {
+            matrices[i] = firstInverse * matrices[i];
+        }
+        matrices[0] = Matrix4x4.identity;
     }
 
     private List<Matrix4x4> matricesForPolyhedra(List<List<Vector3>> poly)
