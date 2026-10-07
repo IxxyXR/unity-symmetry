@@ -1,6 +1,6 @@
 # Unity Symmetry
 
-The runtime generators expose a `List<Matrix4x4> matrices`. Apply each matrix to the same source mesh or object transform. Slot zero is identity for point, helical, space-group, rod-group and layer-group symmetry.
+The runtime generators expose a `List<Matrix4x4> matrices`. Apply each matrix to the same source mesh or object transform. Slot zero is identity for point, helical, space-group, rod-group, layer-group and frieze symmetry.
 
 ## Helical symmetry
 
@@ -79,6 +79,31 @@ python Tools/generate_layer_groups.py
 ```
 
 The Unity package has no Python runtime dependency. Attribution and source revision are in `Third Party Notices.md`.
+
+## Frieze symmetry
+
+```csharp
+var symmetry = new FriezeSymmetry(
+    FriezeSymmetry.Group.p2mg, repeats: 6, period: 1.5f);
+```
+
+The seven frieze groups repeat a planar border along local X. All operations act in XY and preserve Z. `repeats` is the positive number of complete periods, starting at period zero; `period` is the positive repeat distance. Slot zero is exact identity. Matrix order is period first, operation second, with no wrapping of vertices or merging of coincident copies.
+
+The enum follows International Tables for Crystallography, Volume E numbering:
+
+| Group | Symbol | Operations per period | Pattern |
+|---|---|---|---|
+| 1 | p1 | 1 | Translation only |
+| 2 | p2 | 2 | Half turns |
+| 3 | p1m1 | 2 | Mirrors perpendicular to the strip |
+| 4 | p11m | 2 | Mirror parallel to the strip |
+| 5 | p11g | 2 | Parallel reflection with a half-period glide |
+| 6 | p2mm | 4 | Both mirrors and half turns |
+| 7 | p2mg | 4 | Perpendicular mirrors, glide reflections and half turns |
+
+Mirrors perpendicular to the strip lie at X=0 for the first period; parallel mirrors lie at Y=0. For p2mg, the glide advances by half a period and the half-turn centers are offset by a quarter period from the perpendicular mirrors.
+
+The example project contains `Assets/Scenes/Frieze Test.unity`. Its inspector offers all seven groups in one selector, adjustable repeats and period, and a live model preview. It starts with p2mg across six periods, producing 24 copies. An asymmetric motif offset from the strip axis makes the mirror and glide operations visible. The runtime is implemented directly from the seven group definitions, with no database or external dependency.
 
 ## Space-group data
 
