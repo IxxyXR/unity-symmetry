@@ -141,6 +141,24 @@ The example project contains `Assets/Scenes/Line Group Test.unity`, with one thi
 
 Reference: https://doi.org/10.1007/978-3-642-11172-3
 
+## Penrose tiling
+
+```csharp
+var tiling = new PenroseTiling(subdivisions: 4, radius: 5f);
+```
+
+The generator subdivides a decagonal seed of ten Robinson triangles using the golden ratio, then pairs triangles across their shared base edges into thin and thick Penrose rhombs. At the finite patch boundary, unmatched triangles are retained as clipped half-rhombs. Shared subdivision points and edges use vertex indices, with no coordinate-tolerance matching.
+
+`subdivisions` is a nonnegative count. Increasing it produces more, smaller tiles inside the same patch. `radius` is the positive circumradius of the decagonal patch in local XY. `edgeLength` gives the complete rhomb edge length at that depth. Tile counts grow exponentially with subdivision depth; the example inspector offers levels 0–7.
+
+`vertices` contains the indexed patch coordinates. Each entry of `tiles` gives a thin/thick `kind` and a cyclic array of vertex `indices`. `completeRhomb` is true for four-vertex tiles and false for the three-vertex boundary fragments.
+
+`matrices` contains one motif placement per tile, in the same order as `tiles`. The translation is the average of the polygon vertices, and the rotation aligns local X with its first edge. Placements are relative to the center of the patch, so the first matrix generally includes a translation and rotation. Ordering is deterministic for a given subdivision count. Motifs can share content while using these individual positions and orientations.
+
+The example project contains `Assets/Scenes/Penrose Test.unity`. Its `PenroseTest` component displays unique tile outline edges and repeated motifs, with separate visibility toggles and a live inspector preview. Motif size is a fraction of the current tile edge length, so it follows changes in subdivision depth. The demo starts with four subdivisions and a radius of five. Its outline mesh and material are generated in memory and cleaned up with the component.
+
+Construction reference: [Penrose Tiling Explained](https://preshing.com/20110831/penrose-tiling-explained/). Background: [Robinson triangle tilings](https://tilings.math.uni-bielefeld.de/substitution/robinson-triangle/).
+
 ## Space-group data
 
 The static C# catalog is generated from the BSD-licensed spglib 2.7.0 database. The Unity package has no Python or spglib runtime dependency. Attribution is in `Third Party Notices.md`.
