@@ -10,7 +10,7 @@ public class PointGroupTest : MonoBehaviour
 {
     [Header("Symmetry")]
     public PointSymmetry.Family family;
-    public int n = 3;
+    [Min(1)] public int n = 3;
     public float radius = 1f;
     
     [Header("Transform Before")]
@@ -26,15 +26,21 @@ public class PointGroupTest : MonoBehaviour
         
     [BoxGroup("Gizmos"), InspectorName("Sample Shape Gizmos")] public bool symmetryGizmos;
     
-    [BoxGroup("Gizmos")] public bool frameGizmos;
+    [BoxGroup("Gizmos"), UnityEngine.Serialization.FormerlySerializedAs("frameGizmos")] public bool domainGizmos;
     [BoxGroup("Gizmos"), Min(0.01f)] public float displayRadius = 1f;
 
     private PointSymmetry sym;
+    private PointSymmetry.DomainOutline domainOutline;
     private List<Vector2> gizmoPath;
+
+    private void OnEnable() { OnValidate(); }
 
     private void OnValidate()
     {
+        n = Mathf.Max(1, n);
+        displayRadius = Mathf.Max(0.01f, displayRadius);
         sym = new PointSymmetry(family, n, radius);
+        domainOutline = sym.CreateDomainOutline(displayRadius);
     }
 
     void Update()
@@ -55,21 +61,23 @@ public class PointGroupTest : MonoBehaviour
 
         if (mesh == null) return;
 
-        var matrices = new List<Matrix4x4>();
         var transformBefore = Matrix4x4.TRS(Position, Quaternion.Euler(Rotation), Scale);
-        var cumulativeTransform = Matrix4x4.TRS(PositionEach, Quaternion.Euler(RotationEach), ScaleEach);
-        var currentCumulativeTransform = cumulativeTransform;
-
-        foreach (var m in sym.matrices)
-        {
-            matrices.Add(
-                (ApplyAfter ? currentCumulativeTransform * m : m * currentCumulativeTransform) * transformBefore
-            );
-            currentCumulativeTransform *= cumulativeTransform;
-        }
-        DrawInstances(mesh, material, matrices);
+        DrawInstances(mesh, material, GetSymmetryMatrices().Select(m => m * transformBefore).ToList());
     }
-    
+
+    private List<Matrix4x4> GetSymmetryMatrices()
+    {
+        var result = new List<Matrix4x4>();
+        var transformEach = Matrix4x4.TRS(PositionEach, Quaternion.Euler(RotationEach), ScaleEach);
+        var cumulative = transformEach;
+        foreach (var matrix in sym.matrices)
+        {
+            result.Add(ApplyAfter ? cumulative * matrix : matrix * cumulative);
+            cumulative *= transformEach;
+        }
+        return result;
+    }
+
     private List<List<T>> Split<T> (List<T> source, int size)
     {
         return source
@@ -100,52 +108,16 @@ public class PointGroupTest : MonoBehaviour
     {
         if (sym==null) return;
             
-        if (frameGizmos)
+        var matrices = GetSymmetryMatrices();
+        if (domainGizmos)
         {
-            Gizmos.color = Color.white;
-            List<List<Vector3>> faces = null;
-            switch (family)
+            // Draw the source last so shared edges remain white.
+            for (var copy = matrices.Count - 1; copy >= 0; copy--)
             {
-                case PointSymmetry.Family.T:
-                case PointSymmetry.Family.Th:
-                case PointSymmetry.Family.Td: faces = sym.Tetrahedron(); break;
-                case PointSymmetry.Family.O:
-                case PointSymmetry.Family.Oh: faces = sym.Octahedron(); break;
-                case PointSymmetry.Family.I:
-                case PointSymmetry.Family.Ih: faces = sym.Icosahedron(); break;
-            }
-            if (faces != null)
-            {
-                foreach (var face in faces)
-                for (var i = 0; i < face.Count; i++)
-                    Gizmos.DrawLine(sym.referenceFrame.MultiplyPoint3x4(face[i] * displayRadius),
-                        sym.referenceFrame.MultiplyPoint3x4(face[(i + 1) % face.Count] * displayRadius));
-            }
-            else
-            {
-                // Axial symmetry frame: two rings and angular sectors around local Y.
-                const int segments = 48;
-                for (var segment = 0; segment < segments; segment++)
-                {
-                    var angle = 2f * Mathf.PI * segment / segments;
-                    var a = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * displayRadius;
-                    angle = 2f * Mathf.PI * (segment + 1) / segments;
-                    var b = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * displayRadius;
-                    foreach (var height in new[] { -displayRadius, displayRadius })
-                        Gizmos.DrawLine(sym.referenceFrame.MultiplyPoint3x4(a + Vector3.up * height),
-                            sym.referenceFrame.MultiplyPoint3x4(b + Vector3.up * height));
-                }
-                var sectors = family == PointSymmetry.Family.Sn ? 2 * n : n;
-                for (var sector = 0; sector < sectors; sector++)
-                {
-                    var angle = 2f * Mathf.PI * sector / sectors;
-                    var radial = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * displayRadius;
-                    var lower = radial - Vector3.up * displayRadius;
-                    var upper = radial + Vector3.up * displayRadius;
-                    Gizmos.DrawLine(sym.referenceFrame.MultiplyPoint3x4(lower), sym.referenceFrame.MultiplyPoint3x4(upper));
-                    Gizmos.DrawLine(sym.referenceFrame.MultiplyPoint3x4(-Vector3.up * displayRadius), sym.referenceFrame.MultiplyPoint3x4(lower));
-                    Gizmos.DrawLine(sym.referenceFrame.MultiplyPoint3x4(Vector3.up * displayRadius), sym.referenceFrame.MultiplyPoint3x4(upper));
-                }
+                Gizmos.color = copy == 0 ? Color.white : Color.blue;
+                foreach (var edge in domainOutline.edges)
+                    Gizmos.DrawLine(matrices[copy].MultiplyPoint3x4(domainOutline.vertices[edge.x]),
+                        matrices[copy].MultiplyPoint3x4(domainOutline.vertices[edge.y]));
             }
         }
         if (symmetryGizmos)
@@ -163,7 +135,7 @@ public class PointGroupTest : MonoBehaviour
                 };
             }
             
-            foreach (var m in sym.matrices)
+            foreach (var m in matrices)
             {
                 var path = gizmoPath.Select(v => (Vector2)m.MultiplyPoint3x4(v)).ToList();
                 DrawPathGizmo(path);
