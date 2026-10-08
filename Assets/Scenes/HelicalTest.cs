@@ -24,7 +24,7 @@ public class HelicalTest : MonoBehaviour
     public Vector3 ScaleEach = Vector3.one;
     public bool ApplyAfter = true;
 
-    [BoxGroup("Gizmos")] public bool symmetryGizmos;
+    [BoxGroup("Gizmos"), InspectorName("Sample Shape Gizmos")] public bool symmetryGizmos;
 
     private HelicalSymmetry sym;
     private List<Vector3> gizmoPath;

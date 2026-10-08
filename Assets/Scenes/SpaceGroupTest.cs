@@ -27,7 +27,9 @@ public class SpaceGroupTest : MonoBehaviour
     public Vector3 ScaleEach = Vector3.one;
     public bool ApplyAfter = true;
 
-    [BoxGroup("Gizmos")] public bool symmetryGizmos;
+    [BoxGroup("Gizmos"), InspectorName("Sample Shape Gizmos")] public bool symmetryGizmos;
+
+    [BoxGroup("Gizmos")] public bool cellGizmos;
 
     private SpaceGroupSymmetry sym;
     private List<Vector3> gizmoPath;
@@ -111,6 +113,28 @@ public class SpaceGroupTest : MonoBehaviour
     {
         if (sym==null) return;
 
+        if (cellGizmos)
+        {
+            // Conventional lattice cells, using the same basis as the runtime generator.
+            // These are cells, rather than fundamental domains of each group operation.
+            for (var x = 0; x < repeats.x; x++)
+            for (var y = 0; y < repeats.y; y++)
+            for (var z = 0; z < repeats.z; z++)
+            {
+                Gizmos.color = x == 0 && y == 0 && z == 0 ? Color.white : Color.blue;
+                for (var corner = 0; corner < 8; corner++)
+                {
+                    var origin = new Vector3(x + (corner & 1), y + ((corner >> 1) & 1), z + ((corner >> 2) & 1));
+                    for (var axis = 0; axis < 3; axis++)
+                    {
+                        if ((corner & (1 << axis)) != 0) continue;
+                        var end = origin;
+                        end[axis] += 1;
+                        Gizmos.DrawLine(sym.cellBasis.MultiplyPoint3x4(origin), sym.cellBasis.MultiplyPoint3x4(end));
+                    }
+                }
+            }
+        }
         if (symmetryGizmos)
         {
             if (gizmoPath == null || gizmoPath.Count == 0)

@@ -24,8 +24,7 @@ public class PointGroupTest : MonoBehaviour
     public Vector3 ScaleEach = Vector3.one;
     public bool ApplyAfter = true;
         
-    [BoxGroup("Gizmos")] public bool symmetryGizmos;
-    [BoxGroup("Gizmos")] public bool domainGizmos;
+    [BoxGroup("Gizmos"), InspectorName("Sample Shape Gizmos")] public bool symmetryGizmos;
     
     private PointSymmetry sym;
     private List<Vector2> gizmoPath;

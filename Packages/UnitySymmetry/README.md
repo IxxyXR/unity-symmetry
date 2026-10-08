@@ -9,6 +9,19 @@ Generate local affine transforms for point, wallpaper, helical, space, rod, laye
 
 The package declares Unity 2019.4 as its minimum version in `package.json`; the example project's Editor version is separate. The newer generators use static C# data or analytic construction, with no Python dependency at runtime.
 
+## Visualization in the example scenes
+
+| Preview | Shared geometry source | Separate sample content |
+| --- | --- | --- |
+| Wallpaper **Domain Gizmos** | `groupProperties.fundamentalRegion.points` | **Sample Shape Gizmos** |
+| Space Group **Cell Gizmos** | `SpaceGroupSymmetry.cellBasis` | **Sample Shape Gizmos** |
+| Line Group **Domain Gizmos** | `CreateDomainOutline()` | **Sample Shape Gizmos** |
+| Penrose **Show Outlines** | `PenroseTiling.vertices` and `tiles` | **Show Motifs** |
+
+These sources also drive Open Brush's corresponding domain, cell and tile previews. Renderers, colors, display radii, insets and scene scaling belong to each application. Space previews show conventional cells, not one fundamental domain per operation. Line's Domain Radius only clips the visualization.
+
+Point, Helical, Rod, Layer and Frieze scenes label their illustrative shape outlines **Sample Shape Gizmos**. Those shapes show how the transforms affect a motif; they are not cells or mathematical domains. The Point scene no longer exposes its previously inactive Domain Gizmos checkbox.
+
 ## Applying transforms
 
 Apply each operation to the same source pose, rather than accumulating operations between copies:
