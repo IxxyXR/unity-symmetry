@@ -29,9 +29,11 @@ public class SpaceGroupTest : MonoBehaviour
 
     [BoxGroup("Gizmos"), InspectorName("Sample Shape Gizmos")] public bool symmetryGizmos;
 
-    [BoxGroup("Gizmos")] public bool cellGizmos;
+    [BoxGroup("Gizmos"), UnityEngine.Serialization.FormerlySerializedAs("cellGizmos")] public bool domainGizmos;
+    [BoxGroup("Gizmos"), InspectorName("Domain Seed (fractional)")] public Vector3 domainSeed = new Vector3(0.173f, 0.317f, 0.419f);
 
     private SpaceGroupSymmetry sym;
+    private SpaceGroupSymmetry.DomainOutline domainOutline;
     private List<Vector3> gizmoPath;
 
     private void OnEnable() { OnValidate(); }
@@ -40,6 +42,7 @@ public class SpaceGroupTest : MonoBehaviour
     {
         repeats = Vector3Int.Max(repeats, Vector3Int.one);
         sym = new SpaceGroupSymmetry(spaceGroup, repeats, cellSize);
+        domainOutline = sym.CreateDomainOutline(domainSeed);
         groupName = sym.name;
         setting = sym.setting;
         copyCount = sym.matrices.Count;
@@ -68,17 +71,19 @@ public class SpaceGroupTest : MonoBehaviour
 
     public List<Matrix4x4> GetDrawMatrices()
     {
-        var matrices = new List<Matrix4x4>();
-        var transformBefore = Matrix4x4.TRS(Position, Quaternion.Euler(Rotation), Scale);
-        var cumulativeTransform = Matrix4x4.TRS(PositionEach, Quaternion.Euler(RotationEach), ScaleEach);
-        var currentCumulativeTransform = cumulativeTransform;
+        var source = Matrix4x4.TRS(Position, Quaternion.Euler(Rotation), Scale);
+        return GetSymmetryMatrices().Select(m => m * source).ToList();
+    }
 
+    private List<Matrix4x4> GetSymmetryMatrices()
+    {
+        var matrices = new List<Matrix4x4>();
+        var transformEach = Matrix4x4.TRS(PositionEach, Quaternion.Euler(RotationEach), ScaleEach);
+        var cumulative = transformEach;
         foreach (var m in sym.matrices)
         {
-            matrices.Add(
-                (ApplyAfter ? currentCumulativeTransform * m : m * currentCumulativeTransform) * transformBefore
-            );
-            currentCumulativeTransform *= cumulativeTransform;
+            matrices.Add(ApplyAfter ? cumulative * m : m * cumulative);
+            cumulative *= transformEach;
         }
         return matrices;
     }
@@ -113,26 +118,17 @@ public class SpaceGroupTest : MonoBehaviour
     {
         if (sym==null) return;
 
-        if (cellGizmos)
+        var matrices = GetSymmetryMatrices();
+        if (domainGizmos)
         {
-            // Conventional lattice cells, using the same basis as the runtime generator.
-            // These are cells, rather than fundamental domains of each group operation.
-            for (var x = 0; x < repeats.x; x++)
-            for (var y = 0; y < repeats.y; y++)
-            for (var z = 0; z < repeats.z; z++)
+            // One source region and its actual transformed neighbours, not whole lattice cells.
+            for (var copy = matrices.Count - 1; copy >= 0; copy--)
             {
-                Gizmos.color = x == 0 && y == 0 && z == 0 ? Color.white : Color.blue;
-                for (var corner = 0; corner < 8; corner++)
-                {
-                    var origin = new Vector3(x + (corner & 1), y + ((corner >> 1) & 1), z + ((corner >> 2) & 1));
-                    for (var axis = 0; axis < 3; axis++)
-                    {
-                        if ((corner & (1 << axis)) != 0) continue;
-                        var end = origin;
-                        end[axis] += 1;
-                        Gizmos.DrawLine(sym.cellBasis.MultiplyPoint3x4(origin), sym.cellBasis.MultiplyPoint3x4(end));
-                    }
-                }
+                Gizmos.color = copy == 0 ? Color.white : Color.blue;
+                var matrix = matrices[copy];
+                foreach (var edge in domainOutline.edges)
+                    Gizmos.DrawLine(matrix.MultiplyPoint3x4(domainOutline.vertices[edge.x]),
+                        matrix.MultiplyPoint3x4(domainOutline.vertices[edge.y]));
             }
         }
         if (symmetryGizmos)
@@ -150,7 +146,7 @@ public class SpaceGroupTest : MonoBehaviour
                 };
             }
 
-            foreach (var m in sym.matrices)
+            foreach (var m in matrices)
             {
                 var path = gizmoPath.Select(v => m.MultiplyPoint3x4(v)).ToList();
                 DrawPathGizmo(path);
