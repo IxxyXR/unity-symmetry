@@ -28,6 +28,9 @@ public class FriezeTest : MonoBehaviour
 
     [BoxGroup("Gizmos"), InspectorName("Sample Shape Gizmos")] public bool symmetryGizmos;
 
+    [BoxGroup("Gizmos")] public bool cellGizmos;
+    [BoxGroup("Gizmos"), Min(0.01f)] public float stripHalfWidth = 1f;
+
     private FriezeSymmetry sym;
     private List<Vector3> gizmoPath;
 
@@ -109,6 +112,22 @@ public class FriezeTest : MonoBehaviour
     {
         if (sym==null) return;
 
+        if (cellGizmos)
+        {
+            // Translation periods clipped to a finite display strip in the nonperiodic direction.
+            for (var repeat = 0; repeat < repeats; repeat++)
+            {
+                Gizmos.color = repeat == 0 ? Color.white : Color.blue;
+                var start = repeat * period;
+                var end = start + period;
+                var a = new Vector3(start, -stripHalfWidth, 0);
+                var b = new Vector3(end, -stripHalfWidth, 0);
+                var c = new Vector3(end, stripHalfWidth, 0);
+                var d = new Vector3(start, stripHalfWidth, 0);
+                Gizmos.DrawLine(a, b); Gizmos.DrawLine(b, c);
+                Gizmos.DrawLine(c, d); Gizmos.DrawLine(d, a);
+            }
+        }
         if (symmetryGizmos)
         {
             if (gizmoPath == null || gizmoPath.Count == 0)

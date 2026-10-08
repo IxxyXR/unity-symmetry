@@ -26,6 +26,9 @@ public class HelicalTest : MonoBehaviour
 
     [BoxGroup("Gizmos"), InspectorName("Sample Shape Gizmos")] public bool symmetryGizmos;
 
+    [BoxGroup("Gizmos")] public bool stepGizmos;
+    [BoxGroup("Gizmos"), Min(0.01f)] public float displayRadius = 1f;
+
     private HelicalSymmetry sym;
     private List<Vector3> gizmoPath;
 
@@ -99,6 +102,32 @@ public class HelicalTest : MonoBehaviour
     {
         if (sym==null) return;
 
+        if (stepGizmos)
+        {
+            for (var repeat = 0; repeat < copies; repeat++)
+            {
+                Gizmos.color = repeat == 0 ? Color.white : Color.blue;
+                var frame = sym.matrices[repeat];
+                var lower = -advance * 0.5f;
+                var upper = advance * 0.5f;
+                const int segments = 32;
+                for (var segment = 0; segment < segments; segment++)
+                {
+                    var angle = 2f * Mathf.PI * segment / segments;
+                    var radial = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * displayRadius;
+                    angle = 2f * Mathf.PI * (segment + 1) / segments;
+                    var next = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * displayRadius;
+                    var a = frame.MultiplyPoint3x4(radial + Vector3.up * lower);
+                    var b = frame.MultiplyPoint3x4(radial + Vector3.up * upper);
+                    Gizmos.DrawLine(a, frame.MultiplyPoint3x4(next + Vector3.up * lower));
+                    if (upper != lower)
+                    {
+                        Gizmos.DrawLine(b, frame.MultiplyPoint3x4(next + Vector3.up * upper));
+                        if (segment % (segments / 4) == 0) Gizmos.DrawLine(a, b);
+                    }
+                }
+            }
+        }
         if (symmetryGizmos)
         {
             if (gizmoPath == null || gizmoPath.Count == 0)

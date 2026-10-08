@@ -28,6 +28,8 @@ public class LayerGroupTest : MonoBehaviour
 
     [BoxGroup("Gizmos"), InspectorName("Sample Shape Gizmos")] public bool symmetryGizmos;
 
+    [BoxGroup("Gizmos")] public bool cellGizmos;
+
     private LayerGroupSymmetry sym;
     private List<Vector3> gizmoPath;
 
@@ -109,6 +111,20 @@ public class LayerGroupTest : MonoBehaviour
     {
         if (sym==null) return;
 
+        if (cellGizmos)
+        {
+            for (var x = 0; x < repeats.x; x++)
+            for (var y = 0; y < repeats.y; y++)
+            {
+                Gizmos.color = x == 0 && y == 0 ? Color.white : Color.blue;
+                var a = sym.cellBasis.MultiplyPoint3x4(new Vector3(x, y, 0));
+                var b = sym.cellBasis.MultiplyPoint3x4(new Vector3(x + 1, y, 0));
+                var c = sym.cellBasis.MultiplyPoint3x4(new Vector3(x + 1, y + 1, 0));
+                var d = sym.cellBasis.MultiplyPoint3x4(new Vector3(x, y + 1, 0));
+                Gizmos.DrawLine(a, b); Gizmos.DrawLine(b, c);
+                Gizmos.DrawLine(c, d); Gizmos.DrawLine(d, a);
+            }
+        }
         if (symmetryGizmos)
         {
             if (gizmoPath == null || gizmoPath.Count == 0)

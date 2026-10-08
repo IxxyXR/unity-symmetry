@@ -16,7 +16,7 @@ Generate Unity `Matrix4x4` transforms for repeated meshes, GameObjects, drawing 
 | `LineGroupSymmetry` | All thirteen general line-group families, with arbitrary axial order along local Z | Line Group Test |
 | `PenroseTiling` | Finite quasiperiodic patches of thin and thick rhombs, with motif placements | Penrose Test |
 
-Each generator exposes `matrices`. Penrose also exposes indexed tile geometry and a Thin, Thick or Both placement selector. The generators produce transforms; the caller decides how to render or apply them.
+Each generator exposes `matrices`. Penrose also exposes indexed tile geometry and a Thin, Thick or Both placement selector. The generators produce transforms; the caller decides how to render or apply them. Each example scene offers a domain, cell, step or frame preview separately from sample shapes or motifs.
 
 ## Install
 

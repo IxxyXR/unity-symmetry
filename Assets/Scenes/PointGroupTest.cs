@@ -26,6 +26,9 @@ public class PointGroupTest : MonoBehaviour
         
     [BoxGroup("Gizmos"), InspectorName("Sample Shape Gizmos")] public bool symmetryGizmos;
     
+    [BoxGroup("Gizmos")] public bool frameGizmos;
+    [BoxGroup("Gizmos"), Min(0.01f)] public float displayRadius = 1f;
+
     private PointSymmetry sym;
     private List<Vector2> gizmoPath;
 
@@ -97,6 +100,54 @@ public class PointGroupTest : MonoBehaviour
     {
         if (sym==null) return;
             
+        if (frameGizmos)
+        {
+            Gizmos.color = Color.white;
+            List<List<Vector3>> faces = null;
+            switch (family)
+            {
+                case PointSymmetry.Family.T:
+                case PointSymmetry.Family.Th:
+                case PointSymmetry.Family.Td: faces = sym.Tetrahedron(); break;
+                case PointSymmetry.Family.O:
+                case PointSymmetry.Family.Oh: faces = sym.Octahedron(); break;
+                case PointSymmetry.Family.I:
+                case PointSymmetry.Family.Ih: faces = sym.Icosahedron(); break;
+            }
+            if (faces != null)
+            {
+                foreach (var face in faces)
+                for (var i = 0; i < face.Count; i++)
+                    Gizmos.DrawLine(sym.referenceFrame.MultiplyPoint3x4(face[i] * displayRadius),
+                        sym.referenceFrame.MultiplyPoint3x4(face[(i + 1) % face.Count] * displayRadius));
+            }
+            else
+            {
+                // Axial symmetry frame: two rings and angular sectors around local Y.
+                const int segments = 48;
+                for (var segment = 0; segment < segments; segment++)
+                {
+                    var angle = 2f * Mathf.PI * segment / segments;
+                    var a = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * displayRadius;
+                    angle = 2f * Mathf.PI * (segment + 1) / segments;
+                    var b = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * displayRadius;
+                    foreach (var height in new[] { -displayRadius, displayRadius })
+                        Gizmos.DrawLine(sym.referenceFrame.MultiplyPoint3x4(a + Vector3.up * height),
+                            sym.referenceFrame.MultiplyPoint3x4(b + Vector3.up * height));
+                }
+                var sectors = family == PointSymmetry.Family.Sn ? 2 * n : n;
+                for (var sector = 0; sector < sectors; sector++)
+                {
+                    var angle = 2f * Mathf.PI * sector / sectors;
+                    var radial = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * displayRadius;
+                    var lower = radial - Vector3.up * displayRadius;
+                    var upper = radial + Vector3.up * displayRadius;
+                    Gizmos.DrawLine(sym.referenceFrame.MultiplyPoint3x4(lower), sym.referenceFrame.MultiplyPoint3x4(upper));
+                    Gizmos.DrawLine(sym.referenceFrame.MultiplyPoint3x4(-Vector3.up * displayRadius), sym.referenceFrame.MultiplyPoint3x4(lower));
+                    Gizmos.DrawLine(sym.referenceFrame.MultiplyPoint3x4(Vector3.up * displayRadius), sym.referenceFrame.MultiplyPoint3x4(upper));
+                }
+            }
+        }
         if (symmetryGizmos)
         {
             if (gizmoPath == null || gizmoPath.Count == 0)

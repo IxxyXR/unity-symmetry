@@ -28,6 +28,9 @@ public class RodGroupTest : MonoBehaviour
 
     [BoxGroup("Gizmos"), InspectorName("Sample Shape Gizmos")] public bool symmetryGizmos;
 
+    [BoxGroup("Gizmos")] public bool cellGizmos;
+    [BoxGroup("Gizmos"), Min(0.01f)] public float displayRadius = 1f;
+
     private RodGroupSymmetry sym;
     private List<Vector3> gizmoPath;
 
@@ -109,6 +112,32 @@ public class RodGroupTest : MonoBehaviour
     {
         if (sym==null) return;
 
+        if (cellGizmos)
+        {
+            for (var repeat = 0; repeat < repeats; repeat++)
+            {
+                Gizmos.color = repeat == 0 ? Color.white : Color.blue;
+                var frame = Matrix4x4.Translate(Vector3.forward * (repeat * period));
+                var lower = 0f;
+                var upper = period;
+                const int segments = 32;
+                for (var segment = 0; segment < segments; segment++)
+                {
+                    var angle = 2f * Mathf.PI * segment / segments;
+                    var radial = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0) * displayRadius;
+                    angle = 2f * Mathf.PI * (segment + 1) / segments;
+                    var next = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0) * displayRadius;
+                    var a = frame.MultiplyPoint3x4(radial + Vector3.forward * lower);
+                    var b = frame.MultiplyPoint3x4(radial + Vector3.forward * upper);
+                    Gizmos.DrawLine(a, frame.MultiplyPoint3x4(next + Vector3.forward * lower));
+                    if (upper != lower)
+                    {
+                        Gizmos.DrawLine(b, frame.MultiplyPoint3x4(next + Vector3.forward * upper));
+                        if (segment % (segments / 4) == 0) Gizmos.DrawLine(a, b);
+                    }
+                }
+            }
+        }
         if (symmetryGizmos)
         {
             if (gizmoPath == null || gizmoPath.Count == 0)
