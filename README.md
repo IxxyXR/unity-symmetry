@@ -209,7 +209,7 @@ var outline = symmetry.CreateDomainOutline(radius: 1.5f);
 Vector3[] continuousPath = outline.GetWirePath();
 ```
 
-The display radius clips the domain to a cylinder; it is not a group parameter and does not change copy transforms. The optional `arcSegments` argument (default 48) controls the straight-line approximation per full circle. `edges` are vertex-index pairs. `GetWirePath()` returns a continuous outline that retraces edges without introducing interior diagonals. No renderers or GameObjects are created.
+The display radius clips the domain to a cylinder; it is not a group parameter and does not change copy transforms. The optional `arcSegments` argument (default 48) controls the straight-line approximation per full circle. `edges` are vertex-index pairs. `GetWirePath()` returns a continuous outline that retraces edges without introducing interior diagonals. No renderers or GameObjects are created. In `Line Group Test`, **Domain Gizmos** uses this same API, with an adjustable **Domain Radius**. **Sample Shape Gizmos** independently shows a sample motif; both follow the demo's Transform Each settings.
 
 Screw families rotate the sectors between steps. Their domain remains usable when the screw angle has no pure translation period. At zero advance the outline is flat, and repeated rotations or reflections can overlap; it is a preview rather than a 3D fundamental domain. The non-overlap statement applies to positive advance and the unmodified group operations; arbitrary additional transforms applied separately to each domain can make them overlap.
 
