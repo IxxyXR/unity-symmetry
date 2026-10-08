@@ -1,6 +1,60 @@
 # Unity Symmetry
 
-The runtime generators expose a `List<Matrix4x4> matrices`. Apply each matrix to the same source mesh or object transform. Slot zero is identity for point, helical, space-group, rod-group, layer-group, frieze and general line-group symmetry.
+Generate local affine transforms for point, wallpaper, helical, space, rod, layer, frieze and general line-group symmetry, or motif placements and indexed geometry for Penrose tilings. The runtime generators expose a `List<Matrix4x4> matrices` and use Unity types in the global namespace.
+
+## Installation and examples
+
+1. In Unity's Package Manager, choose **Add package from git URL** and enter `https://github.com/IxxyXR/unity-symmetry.git#upm`.
+2. To use the interactive test scenes, clone the full [repository](https://github.com/IxxyXR/unity-symmetry) and open its Unity 2022.3.62f2 project. The scenes live in `Assets/Scenes`; the standalone UPM package contains the runtime library.
+
+The package declares Unity 2019.4 as its minimum version in `package.json`; the example project's Editor version is separate. The newer generators use static C# data or analytic construction, with no Python dependency at runtime.
+
+## Applying transforms
+
+Apply each operation to the same source pose, rather than accumulating operations between copies:
+
+```csharp
+var symmetry = new HelicalSymmetry(copies: 12, angleDegrees: 30f, advance: 0.3f);
+Matrix4x4 patternLocalToWorld = Matrix4x4.identity; // Replace with your pattern transform.
+Matrix4x4 sourceLocalPose = Matrix4x4.TRS(
+    new Vector3(1f, 0f, 0f), Quaternion.identity, Vector3.one);
+foreach (Matrix4x4 operation in symmetry.matrices)
+{
+    Matrix4x4 worldPose = patternLocalToWorld * operation * sourceLocalPose;
+    // Use worldPose in your rendering or placement code.
+}
+```
+
+Here `patternLocalToWorld` is your pattern's world-space transform. Scaling it scales both the pattern spacing and the source geometry. To change spacing without resizing a motif, adjust the generator's distance parameters instead. The generators do not create GameObjects or manage linked content.
+
+Point, helical, space, rod, layer, frieze and general line-group generators have exact identity in slot zero. The simple wallpaper constructor rebases the first operation to identity before applying `_finalScale`, so slot zero is identity when that scale is one. The advanced wallpaper constructor uses its supplied offset and scale without this rebasing. Penrose matrices are tile placements relative to the patch center and generally do not begin with identity.
+
+Rotations and reflections are represented by full matrices. Preserve reflected handedness with negative scale or an appropriate matrix-based rendering path; copying only position and quaternion rotation loses reflections. Repeat counts produce finite samples, not infinite patterns, and copies at special positions are not deduplicated.
+
+## Point-group symmetry
+
+```csharp
+var symmetry = new PointSymmetry(
+    pointGroupFamily: PointSymmetry.Family.Cnv, _n: 5, _radius: 1f);
+```
+
+`Family` includes `Cn`, `Cnv`, `Cnh`, `Sn`, `Dn`, `Dnh`, `Dnd`, `T`, `Th`, `Td`, `O`, `Oh`, `I` and `Ih`. Supply a positive `_n`; it controls axial families. The polyhedral families use their fixed geometry. `_radius` is used in the source placement construction, and the resulting matrices are expressed relative to the first placement so that the original remains unchanged. Axial rotations use local Y.
+
+The example project contains `Assets/Scenes/Point Group Test.unity`. Its `PointGroupTest` component exposes family, order, radius, source transforms and transforms applied to each copy.
+
+## Wallpaper symmetry
+
+```csharp
+var symmetry = new WallpaperSymmetry(
+    _group: SymmetryGroup.R.p4m, _repeatX: 3, _repeatY: 3,
+    _finalScale: 1f, _w: 1f, _h: 1f, _sx: 0f, _sy: 0f);
+```
+
+`SymmetryGroup.R` selects one of the seventeen wallpaper groups. The pattern lies in local XY. `_repeatX` and `_repeatY` control the finite repeat window; `_w`, `_h`, `_sx` and `_sy` feed group-specific width, height and skew parameters. Not every group uses every parameter. `_finalScale` scales both translations and geometry in the simple constructor.
+
+The advanced overload accepts `_tileSize`, `_unitScale`, `_unitOffset`, `_spacing`, `d` and `_finalScale` after the group and repeat counts. It retains the legacy low-level behavior: `_finalScale` is unused in this overload, and it does not rebase its first placement to identity. `groupProperties` exposes the underlying domain and lattice information; `UnitOffset` and `D` expose the generated simple settings.
+
+The example project contains `Assets/Scenes/Wallpaper Test.unity`. Its `WallPaperTest` component offers simple group settings or the advanced lattice parameters, plus symmetry and domain gizmos.
 
 ## Helical symmetry
 
@@ -25,7 +79,7 @@ var symmetry = new SpaceGroupSymmetry(
 
 `repeats` gives positive cell counts along a, b and c. The grid starts at cell (0, 0, 0), and each cell contains the complete set of group operations. Matrix order is cell first (x, then y, then z), operation second. Matrices are affine transforms of the source; they do not wrap vertices into cell boundaries or merge coincident copies at special positions.
 
-The example project contains `Assets/Scenes/Space Group Test.unity`. Its `SpaceGroupTest` inspector offers seven crystal systems and 2–6 named presets per system, alongside a live model preview. An advanced number field selects any of the 230 groups. Repeats and cell size remain adjustable; group name, setting and copy count are displayed. It starts with group 19 (`P2_12_12_1`), whose four operations across eight cells produce 32 copies.
+The example project contains `Assets/Scenes/Space Group Test.unity`. Its `SpaceGroupTest` inspector offers seven crystal systems and 2–6 named presets per system, alongside a live model preview. An advanced number field selects any of the 230 groups. Repeats and cell size remain adjustable; group name, setting and copy count are displayed. For example, group 19 (`P2_12_12_1`) has four operations; a 2 x 2 x 2 cell window produces 32 copies.
 
 ## Space-group selection
 
