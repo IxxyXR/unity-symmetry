@@ -17,6 +17,7 @@
 
 1. Point-group transforms use the first placement as their reference frame, with exact identity in slot zero.
 2. The example project now uses Unity 2022.3.62f2. The runtime package's declared minimum remains Unity 2019.4.
-3. The documentation now covers installation, all supported generators and shared transform conventions.
+3. Line groups accept zero advance for rotation/reflection samples at one axial position, with flat preview outlines.
+4. The documentation now covers installation, all supported generators and shared transform conventions.
 
 This section records the additions since the original point/wallpaper implementation; it does not assign a new package version or release date.

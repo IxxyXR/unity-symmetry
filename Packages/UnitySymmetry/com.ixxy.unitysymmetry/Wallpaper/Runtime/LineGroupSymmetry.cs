@@ -77,7 +77,8 @@ public sealed class LineGroupSymmetry
         var arcPoints = fullCircle ? segments : segments + 1;
         var vertices = new List<Vector3>();
         var edges = new List<Vector2Int>();
-        for (var level = 0; level < 2; level++)
+        var flat = domainZRange.x == domainZRange.y;
+        for (var level = 0; level < (flat ? 1 : 2); level++)
         {
             var offset = vertices.Count;
             var z = level == 0 ? domainZRange.x : domainZRange.y;
@@ -88,6 +89,17 @@ public sealed class LineGroupSymmetry
                 if (i > 0) edges.Add(new Vector2Int(offset + i - 1, offset + i));
             }
             if (fullCircle) edges.Add(new Vector2Int(offset + arcPoints - 1, offset));
+        }
+        if (flat)
+        {
+            if (!fullCircle)
+            {
+                var axis = vertices.Count;
+                vertices.Add(new Vector3(0, 0, domainZRange.x));
+                edges.Add(new Vector2Int(axis, 0));
+                edges.Add(new Vector2Int(axis, arcPoints - 1));
+            }
+            return new DomainOutline(vertices.ToArray(), edges.ToArray());
         }
         edges.Add(new Vector2Int(0, arcPoints));
         if (fullCircle)
@@ -120,14 +132,14 @@ public sealed class LineGroupSymmetry
 
     /// <param name="n">Positive axial rotation order, including noncrystallographic orders.</param>
     /// <param name="repeats">Positive count of generalized steps, starting at step zero.</param>
-    /// <param name="advance">Positive distance along Z per generalized step.</param>
+    /// <param name="advance">Nonnegative distance along Z per generalized step. Zero keeps every step at the same Z.</param>
     /// <param name="angleDegrees">Twist per step for families 1 and 5; other families determine it from n.</param>
     public LineGroupSymmetry(Family family, int n, int repeats, float advance, float angleDegrees = 0f)
     {
         if ((int)family < 1 || (int)family > 13) throw new ArgumentOutOfRangeException(nameof(family));
         if (n < 1) throw new ArgumentOutOfRangeException(nameof(n));
         if (repeats < 1) throw new ArgumentOutOfRangeException(nameof(repeats));
-        if (advance <= 0 || float.IsNaN(advance) || float.IsInfinity(advance))
+        if (advance < 0 || float.IsNaN(advance) || float.IsInfinity(advance))
             throw new ArgumentOutOfRangeException(nameof(advance));
         if (UsesFreeAngle(family) && (float.IsNaN(angleDegrees) || float.IsInfinity(angleDegrees)))
             throw new ArgumentOutOfRangeException(nameof(angleDegrees));

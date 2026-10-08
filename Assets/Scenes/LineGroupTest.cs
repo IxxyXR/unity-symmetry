@@ -13,7 +13,7 @@ public class LineGroupTest : MonoBehaviour
     [Min(1)] public int n = 5;
     public float angleDegrees = 27f;
     [Min(1)] public int repeats = 8;
-    [Min(0.01f)] public float advance = 1.1f;
+    [Min(0f)] public float advance = 1.1f;
     [ReadOnly] public string groupName;
     [ReadOnly] public int copyCount;
 
