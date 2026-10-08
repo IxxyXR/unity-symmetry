@@ -18,7 +18,8 @@
 1. Point-group transforms use the first placement as their reference frame, with exact identity in slot zero.
 2. The example project now uses Unity 2022.3.62f2. The runtime package's declared minimum remains Unity 2019.4.
 3. Line groups accept zero advance for rotation/reflection samples at one axial position, with flat preview outlines.
-4. Every demo offers a geometric preview independently from sample shapes or motifs: point frames, wallpaper domains, helical step regions, space/rod/layer/frieze cells, line domains and Penrose outlines. Layer cell bases and point reference frames are exposed for visualization consumers.
-5. The documentation now covers installation, all supported generators and shared transform conventions.
+4. Every demo offers a geometric preview independently from sample shapes or motifs: point frames, wallpaper domains, helical step regions, space/rod/layer cells, frieze/line domains and Penrose outlines. Layer cell bases and point reference frames are exposed for visualization consumers.
+5. Frieze previews use group-specific source drawing domains and their transformed copies, replacing whole-period strip cells.
+6. The documentation now covers installation, all supported generators and shared transform conventions.
 
 This section records the additions since the original point/wallpaper implementation; it does not assign a new package version or release date.

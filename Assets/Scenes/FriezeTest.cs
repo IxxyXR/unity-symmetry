@@ -28,10 +28,11 @@ public class FriezeTest : MonoBehaviour
 
     [BoxGroup("Gizmos"), InspectorName("Sample Shape Gizmos")] public bool symmetryGizmos;
 
-    [BoxGroup("Gizmos")] public bool cellGizmos;
+    [BoxGroup("Gizmos"), UnityEngine.Serialization.FormerlySerializedAs("cellGizmos")] public bool domainGizmos;
     [BoxGroup("Gizmos"), Min(0.01f)] public float stripHalfWidth = 1f;
 
     private FriezeSymmetry sym;
+    private Vector3[] domainOutline;
     private List<Vector3> gizmoPath;
 
     private void OnEnable() { OnValidate(); }
@@ -40,6 +41,8 @@ public class FriezeTest : MonoBehaviour
     {
         repeats = Mathf.Max(repeats, 1);
         sym = new FriezeSymmetry(group, repeats, period);
+        stripHalfWidth = Mathf.Max(0.01f, stripHalfWidth);
+        domainOutline = sym.CreateDomainOutline(stripHalfWidth);
         groupName = sym.name;
         copyCount = sym.matrices.Count;
     }
@@ -67,17 +70,19 @@ public class FriezeTest : MonoBehaviour
 
     public List<Matrix4x4> GetDrawMatrices()
     {
-        var matrices = new List<Matrix4x4>();
-        var transformBefore = Matrix4x4.TRS(Position, Quaternion.Euler(Rotation), Scale);
-        var cumulativeTransform = Matrix4x4.TRS(PositionEach, Quaternion.Euler(RotationEach), ScaleEach);
-        var currentCumulativeTransform = cumulativeTransform;
+        var source = Matrix4x4.TRS(Position, Quaternion.Euler(Rotation), Scale);
+        return GetSymmetryMatrices().Select(m => m * source).ToList();
+    }
 
+    private List<Matrix4x4> GetSymmetryMatrices()
+    {
+        var matrices = new List<Matrix4x4>();
+        var transformEach = Matrix4x4.TRS(PositionEach, Quaternion.Euler(RotationEach), ScaleEach);
+        var cumulative = transformEach;
         foreach (var m in sym.matrices)
         {
-            matrices.Add(
-                (ApplyAfter ? currentCumulativeTransform * m : m * currentCumulativeTransform) * transformBefore
-            );
-            currentCumulativeTransform *= cumulativeTransform;
+            matrices.Add(ApplyAfter ? cumulative * m : m * cumulative);
+            cumulative *= transformEach;
         }
         return matrices;
     }
@@ -112,20 +117,17 @@ public class FriezeTest : MonoBehaviour
     {
         if (sym==null) return;
 
-        if (cellGizmos)
+        var matrices = GetSymmetryMatrices();
+        if (domainGizmos)
         {
-            // Translation periods clipped to a finite display strip in the nonperiodic direction.
-            for (var repeat = 0; repeat < repeats; repeat++)
+            // Draw the source last so its white boundary remains visible on shared edges.
+            for (var copy = matrices.Count - 1; copy >= 0; copy--)
             {
-                Gizmos.color = repeat == 0 ? Color.white : Color.blue;
-                var start = repeat * period;
-                var end = start + period;
-                var a = new Vector3(start, -stripHalfWidth, 0);
-                var b = new Vector3(end, -stripHalfWidth, 0);
-                var c = new Vector3(end, stripHalfWidth, 0);
-                var d = new Vector3(start, stripHalfWidth, 0);
-                Gizmos.DrawLine(a, b); Gizmos.DrawLine(b, c);
-                Gizmos.DrawLine(c, d); Gizmos.DrawLine(d, a);
+                Gizmos.color = copy == 0 ? Color.white : Color.blue;
+                var matrix = matrices[copy];
+                for (var edge = 0; edge < domainOutline.Length; edge++)
+                    Gizmos.DrawLine(matrix.MultiplyPoint3x4(domainOutline[edge]),
+                        matrix.MultiplyPoint3x4(domainOutline[(edge + 1) % domainOutline.Length]));
             }
         }
         if (symmetryGizmos)
@@ -143,7 +145,7 @@ public class FriezeTest : MonoBehaviour
                 };
             }
 
-            foreach (var m in sym.matrices)
+            foreach (var m in matrices)
             {
                 var path = gizmoPath.Select(v => m.MultiplyPoint3x4(v)).ToList();
                 DrawPathGizmo(path);
