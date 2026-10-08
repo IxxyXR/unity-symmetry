@@ -68,6 +68,121 @@ public class PointSymmetry {
         return _matrices.Select(m => tr * m).ToList();
     }
     
+    public sealed class DomainOutline
+    {
+        public readonly Vector3[] vertices;
+        public readonly Vector2Int[] edges;
+
+        internal DomainOutline(List<Vector3> vertices, List<Vector2Int> edges)
+        {
+            this.vertices = vertices.ToArray();
+            this.edges = edges.ToArray();
+        }
+    }
+
+    /// <summary>A source drawing region in the first-placement reference frame.
+    /// Axial wedges are clipped to a cylinder; polyhedral cones to a sphere.
+    /// Display extent changes only the outline, not the symmetry operations.</summary>
+    public DomainOutline CreateDomainOutline(float displayRadius, int arcSegments = 48)
+    {
+        if (displayRadius <= 0 || float.IsNaN(displayRadius) || float.IsInfinity(displayRadius))
+            throw new ArgumentOutOfRangeException(nameof(displayRadius));
+        if (arcSegments < 3) throw new ArgumentOutOfRangeException(nameof(arcSegments));
+        var vertices = new List<Vector3>();
+        var edges = new List<Vector2Int>();
+        if (family <= Family.Dnd)
+        {
+            var halfAngle = family == Family.Cnv || family == Family.Sn
+                || family == Family.Dnh || family == Family.Dnd;
+            var aboveAxis = family == Family.Cnh || family == Family.Dn
+                || family == Family.Dnh || family == Family.Dnd;
+            var angle = 2f * Mathf.PI / (halfAngle ? 2 * n : n);
+            var start = family == Family.Cnv || family == Family.Dnh || family == Family.Dnd
+                ? 0f : -angle * 0.5f;
+            var fullCircle = !halfAngle && n == 1;
+            var segments = Mathf.Max(1, Mathf.CeilToInt(arcSegments * angle / (2f * Mathf.PI)));
+            var lower = aboveAxis ? 0f : -displayRadius;
+            var count = fullCircle ? segments : segments + 1;
+            for (var level = 0; level < 2; level++)
+            {
+                var height = level == 0 ? lower : displayRadius;
+                for (var i = 0; i < count; i++)
+                {
+                    var phi = start + angle * i / segments;
+                    vertices.Add(new Vector3(Mathf.Sin(phi) * displayRadius, height,
+                        Mathf.Cos(phi) * displayRadius));
+                    if (i > 0) edges.Add(new Vector2Int(level * count + i - 1, level * count + i));
+                }
+                if (fullCircle) edges.Add(new Vector2Int(level * count + count - 1, level * count));
+            }
+            if (!fullCircle)
+            {
+                var bottomAxis = vertices.Count;
+                vertices.Add(Vector3.up * lower);
+                var topAxis = vertices.Count;
+                vertices.Add(Vector3.up * displayRadius);
+                edges.Add(new Vector2Int(bottomAxis, topAxis));
+                foreach (var side in new[] {0, count - 1})
+                {
+                    edges.Add(new Vector2Int(side, side + count));
+                    edges.Add(new Vector2Int(bottomAxis, side));
+                    edges.Add(new Vector2Int(topAxis, side + count));
+                }
+            }
+        }
+        else
+        {
+            Vector3[] corners;
+            if (family == Family.Th)
+            {
+                // Th acts by cyclic coordinate permutations and independent sign
+                // changes. In the positive octant choose X as the largest coordinate.
+                corners = new[] {Vector3.right, new Vector3(1, 1, 0).normalized,
+                    Vector3.one.normalized, new Vector3(1, 0, 1).normalized};
+            }
+            else
+            {
+                var polyhedron = family == Family.T || family == Family.Td ? Tetrahedron()
+                    : family == Family.O || family == Family.Oh ? Octahedron() : Icosahedron();
+                var face = polyhedron[0];
+                var center = average(face).normalized;
+                var first = face[0].normalized;
+                var last = family == Family.Td || family == Family.Oh || family == Family.Ih
+                    ? (face[0] + face[1]).normalized : face[1].normalized;
+                // Proper rotations use a full face-center fan triangle. Including
+                // face reflections splits it at the midpoint of its outer edge.
+                corners = new[] {center, first, last};
+            }
+            vertices.Add(Vector3.zero);
+            foreach (var corner in corners)
+            {
+                vertices.Add(corner * displayRadius);
+                edges.Add(new Vector2Int(0, vertices.Count - 1));
+            }
+            for (var side = 0; side < corners.Length; side++)
+            {
+                var next = (side + 1) % corners.Length;
+                var segments = Mathf.Max(1, Mathf.CeilToInt(arcSegments
+                    * Vector3.Angle(corners[side], corners[next]) / 360f));
+                var previous = side + 1;
+                for (var step = 1; step <= segments; step++)
+                {
+                    var index = next + 1;
+                    if (step < segments)
+                    {
+                        index = vertices.Count;
+                        vertices.Add(Vector3.Slerp(corners[side], corners[next], (float)step / segments) * displayRadius);
+                    }
+                    edges.Add(new Vector2Int(previous, index));
+                    previous = index;
+                }
+            }
+        }
+        for (var i = 0; i < vertices.Count; i++)
+            vertices[i] = referenceFrame.MultiplyPoint3x4(vertices[i]);
+        return new DomainOutline(vertices, edges);
+    }
+
     public PointSymmetry(Family pointGroupFamily, int _n, float _radius)
     {
         family = pointGroupFamily;
