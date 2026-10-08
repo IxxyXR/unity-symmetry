@@ -83,7 +83,9 @@ public class PointSymmetry {
     /// <summary>A source drawing region in the first-placement reference frame.
     /// Axial wedges are clipped to a cylinder; polyhedral cones to a sphere.
     /// Display extent changes only the outline, not the symmetry operations.</summary>
-    public DomainOutline CreateDomainOutline(float displayRadius, int arcSegments = 48)
+    /// <param name="drawArcs">Use curved cutoff edges. When false, axial guides
+    /// show straight boundary faces and polyhedral cones close with chords.</param>
+    public DomainOutline CreateDomainOutline(float displayRadius, int arcSegments = 48, bool drawArcs = true)
     {
         if (displayRadius <= 0 || float.IsNaN(displayRadius) || float.IsInfinity(displayRadius))
             throw new ArgumentOutOfRangeException(nameof(displayRadius));
@@ -101,7 +103,24 @@ public class PointSymmetry {
             var start = family == Family.Cnv || family == Family.Dnh || family == Family.Dnd
                 ? Mathf.PI : Mathf.PI - angle * 0.5f;
             var fullCircle = !halfAngle && n == 1;
-            var segments = Mathf.Max(1, Mathf.CeilToInt(arcSegments * angle / (2f * Mathf.PI)));
+            if (fullCircle && !drawArcs)
+            {
+                // No angular boundary exists for C1. A single horizontal
+                // boundary (C1h or D1) only needs a flat plane outline.
+                if (aboveAxis)
+                {
+                    vertices.Add(Vector3.right * displayRadius);
+                    vertices.Add(Vector3.forward * displayRadius);
+                    vertices.Add(Vector3.left * displayRadius);
+                    vertices.Add(Vector3.back * displayRadius);
+                    for (var i = 0; i < 4; i++) edges.Add(new Vector2Int(i, (i + 1) % 4));
+                }
+                for (var i = 0; i < vertices.Count; i++)
+                    vertices[i] = referenceFrame.MultiplyPoint3x4(vertices[i]);
+                return new DomainOutline(vertices, edges);
+            }
+            var segments = drawArcs
+                ? Mathf.Max(1, Mathf.CeilToInt(arcSegments * angle / (2f * Mathf.PI))) : 1;
             var lower = aboveAxis ? 0f : -displayRadius;
             var count = fullCircle ? segments : segments + 1;
             for (var level = 0; level < 2; level++)
@@ -112,7 +131,7 @@ public class PointSymmetry {
                     var phi = start + angle * i / segments;
                     vertices.Add(new Vector3(Mathf.Sin(phi) * displayRadius, height,
                         Mathf.Cos(phi) * displayRadius));
-                    if (i > 0) edges.Add(new Vector2Int(level * count + i - 1, level * count + i));
+                    if (drawArcs && i > 0) edges.Add(new Vector2Int(level * count + i - 1, level * count + i));
                 }
                 if (fullCircle) edges.Add(new Vector2Int(level * count + count - 1, level * count));
             }
@@ -180,8 +199,8 @@ public class PointSymmetry {
             for (var side = 0; side < corners.Length; side++)
             {
                 var next = (side + 1) % corners.Length;
-                var segments = Mathf.Max(1, Mathf.CeilToInt(arcSegments
-                    * Vector3.Angle(corners[side], corners[next]) / 360f));
+                var segments = drawArcs ? Mathf.Max(1, Mathf.CeilToInt(arcSegments
+                    * Vector3.Angle(corners[side], corners[next]) / 360f)) : 1;
                 var previous = side + 1;
                 for (var step = 1; step <= segments; step++)
                 {
