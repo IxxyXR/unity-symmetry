@@ -18,7 +18,7 @@ Every demo separates a geometric preview from its sample shapes or motifs:
 | Point | **Frame Gizmos** | Axial rings and sectors, or tetrahedral/octahedral/icosahedral edges, in the generator's reference frame |
 | Wallpaper | **Domain Gizmos** | `groupProperties.fundamentalRegion.points` |
 | Helical | **Step Gizmos** | Axial step regions clipped to cylinders around local Y |
-| Space | **Cell Gizmos** | Conventional lattice cells from `SpaceGroupSymmetry.cellBasis` |
+| Space | **Domain Gizmos** | White source Dirichlet polyhedron and blue copies from `SpaceGroupSymmetry.CreateDomainOutline()` |
 | Rod | **Cell Gizmos** | Translation periods along Z, clipped to a cylinder |
 | Layer | **Cell Gizmos** | In-plane lattice cells from `LayerGroupSymmetry.cellBasis`, including 120-degree hexagonal bases |
 | Frieze | **Domain Gizmos** | White source drawing region and blue transformed regions from `CreateDomainOutline()` |
@@ -27,7 +27,7 @@ Every demo separates a geometric preview from its sample shapes or motifs:
 
 All symmetry demos retain independent **Sample Shape Gizmos** toggles; Penrose instead separates **Show Motifs** from **Show Outlines**. Display Radius, Strip Half Width and Domain Radius adjust visual clipping, without changing the transforms. At zero helical advance, step previews are flat rings.
 
-Frames, step regions and translation cells are labelled as such; they are not claimed to be fundamental domains for all group operations. Wallpaper, Space, Line and Penrose use the same domain, cell or tile sources as the corresponding Open Brush previews. Colors, insets, display extents and scene scaling belong to the application.
+Frames, step regions and translation cells are labelled as such; they are not claimed to be fundamental domains for all group operations. Wallpaper, Line and Penrose use the same domain or tile sources as the corresponding Open Brush previews. Colors, insets, display extents and scene scaling belong to the application.
 
 `PointSymmetry.referenceFrame` maps the original geometric frame to the first-placement reference coordinates used by its matrices. `LayerGroupSymmetry.cellBasis` maps fractional in-plane lattice coordinates to Cartesian coordinates, retaining the original Z coordinate.
 
@@ -102,6 +102,30 @@ var symmetry = new SpaceGroupSymmetry(
 `repeats` gives positive cell counts along a, b and c. The grid starts at cell (0, 0, 0), and each cell contains the complete set of group operations. Matrix order is cell first (x, then y, then z), operation second. Matrices are affine transforms of the source; they do not wrap vertices into cell boundaries or merge coincident copies at special positions.
 
 The example project contains `Assets/Scenes/Space Group Test.unity`. Its `SpaceGroupTest` inspector offers seven crystal systems and 2–6 named presets per system, alongside a live model preview. An advanced number field selects any of the 230 groups. Repeats and cell size remain adjustable; group name, setting and copy count are displayed. For example, group 19 (`P2_12_12_1`) has four operations; a 2 x 2 x 2 cell window produces 32 copies.
+
+## Space-group drawing domains
+
+`SpaceGroupSymmetry.CreateDomainOutline()` generates a convex Dirichlet domain around the general-position point `(0.173, 0.317, 0.419)` in fractional cell coordinates. The overload accepting `fractionalSeed` lets a consumer choose another general-position point. The returned outline contains Cartesian `vertices`, vertex-index-pair `edges` and the Cartesian `seed`. Geometry belongs to the package; the caller chooses rendering and colors.
+
+```csharp
+var symmetry = new SpaceGroupSymmetry(19, new Vector3Int(2, 2, 2), 2f);
+var domain = symmetry.CreateDomainOutline();
+foreach (var operation in symmetry.matrices)
+{
+    foreach (var edge in domain.edges)
+    {
+        Vector3 start = operation.MultiplyPoint3x4(domain.vertices[edge.x]);
+        Vector3 end = operation.MultiplyPoint3x4(domain.vertices[edge.y]);
+        // Render the edge from start to end.
+    }
+}
+```
+
+Each face lies halfway between the seed and a symmetry-equivalent neighbour. The source domain and its transformed copies have disjoint interiors and shared boundaries for unmodified operations. This is a fundamental drawing region, rather than a whole conventional translation cell. It is a [Dirichlet domain](https://journals.iucr.org/a/issues/2020/05/00/sc5138/index.html), rather than the tabulated asymmetric-unit shape of International Tables.
+
+The implementation clips a convex polyhedron using the existing Cartesian group operations and neighbouring lattice translations. It supports the package's equal-edge orthogonal and conventional hexagonal metrics; the repeat window changes which domain copies are displayed, not the source domain geometry. Numerical clipping uses a tolerance of `0.00001 * cellSize`. A seed fixed by a nonidentity operation, modulo translations, is rejected: it would give coincident orbit points instead of one distinct region per operation.
+
+In **Space Group Test**, **Domain Gizmos** shows the source in white and transformed copies in blue, independently from **Sample Shape Gizmos**. **Domain Seed (fractional)** adjusts where the source region lies. Place source geometry within the white region using Transform Before. The outlines follow the same Transform Each operations as the motifs; extra transforms can introduce overlap. The old Cell Gizmos setting is retained under the renamed Domain Gizmos checkbox. Generation runs when settings change, rather than on each gizmo repaint.
 
 ## Space-group selection
 
