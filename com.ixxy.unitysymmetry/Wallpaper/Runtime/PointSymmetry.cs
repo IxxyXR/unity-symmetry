@@ -90,6 +90,7 @@ public class PointSymmetry {
         if (arcSegments < 3) throw new ArgumentOutOfRangeException(nameof(arcSegments));
         var vertices = new List<Vector3>();
         var edges = new List<Vector2Int>();
+        var sourcePlacement = Matrix4x4.identity;
         if (family <= Family.Dnd)
         {
             var halfAngle = family == Family.Cnv || family == Family.Sn
@@ -98,7 +99,7 @@ public class PointSymmetry {
                 || family == Family.Dnh || family == Family.Dnd;
             var angle = 2f * Mathf.PI / (halfAngle ? 2 * n : n);
             var start = family == Family.Cnv || family == Family.Dnh || family == Family.Dnd
-                ? 0f : -angle * 0.5f;
+                ? Mathf.PI : Mathf.PI - angle * 0.5f;
             var fullCircle = !halfAngle && n == 1;
             var segments = Mathf.Max(1, Mathf.CeilToInt(arcSegments * angle / (2f * Mathf.PI)));
             var lower = aboveAxis ? 0f : -displayRadius;
@@ -153,6 +154,23 @@ public class PointSymmetry {
                 // face reflections splits it at the midpoint of its outer edge.
                 corners = new[] {center, first, last};
             }
+            // Select an equivalent cone containing the direction from the
+            // symmetry center to the unchanged main pointer (the source origin).
+            var normals = new Vector3[corners.Length];
+            var interior = average(corners.ToList());
+            for (var side = 0; side < corners.Length; side++)
+            {
+                var normal = Vector3.Cross(corners[side], corners[(side + 1) % corners.Length]).normalized;
+                if (Vector3.Dot(normal, interior) < 0) normal = -normal;
+                normals[side] = referenceFrame.MultiplyVector(normal);
+            }
+            foreach (var operation in matrices)
+            {
+                var direction = operation.inverse.MultiplyVector(-Vector3.forward);
+                if (!normals.All(normal => Vector3.Dot(normal, direction) >= -0.00001f)) continue;
+                sourcePlacement = operation;
+                break;
+            }
             vertices.Add(Vector3.zero);
             foreach (var corner in corners)
             {
@@ -179,7 +197,7 @@ public class PointSymmetry {
             }
         }
         for (var i = 0; i < vertices.Count; i++)
-            vertices[i] = referenceFrame.MultiplyPoint3x4(vertices[i]);
+            vertices[i] = sourcePlacement.MultiplyPoint3x4(referenceFrame.MultiplyPoint3x4(vertices[i]));
         return new DomainOutline(vertices, edges);
     }
 

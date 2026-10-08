@@ -15,7 +15,7 @@ Every demo separates a geometric preview from its sample shapes or motifs:
 
 | Demo | Geometric preview | Meaning |
 | --- | --- | --- |
-| Point | **Frame Gizmos** | Axial rings and sectors, or tetrahedral/octahedral/icosahedral edges, in the generator's reference frame |
+| Point | **Domain Gizmos** | White source wedge or cone and blue copies from `PointSymmetry.CreateDomainOutline()` |
 | Wallpaper | **Domain Gizmos** | `groupProperties.fundamentalRegion.points` |
 | Helical | **Step Gizmos** | Axial step regions clipped to cylinders around local Y |
 | Space | **Domain Gizmos** | White source asymmetric unit and blue copies from `SpaceGroupSymmetry.CreateDomainOutline()` |
@@ -64,6 +64,16 @@ var symmetry = new PointSymmetry(
 
 The example project contains `Assets/Scenes/Point Group Test.unity`. Its `PointGroupTest` component exposes family, order, radius, source transforms and transforms applied to each copy.
 
+### Point-group drawing domains
+
+`PointSymmetry.CreateDomainOutline(displayRadius)` returns Cartesian `vertices` and vertex-index-pair `edges` in the same first-placement reference coordinates as `matrices`. Apply those matrices to the outline to show the source region and its copies. Domains extend indefinitely; `displayRadius` clips the drawing guide without changing any transforms. The symmetry center is at `(0, 0, radius)` in this reference frame. The source region includes the direction from that center to the unchanged main pointer; the display extent can still clip its position.
+
+1. `Cn` uses a full-height angular wedge; `Cnv` halves its angle and `Cnh` uses only its upper half. `Sn` uses narrower full-height wedges, with alternating copies reflected vertically.
+2. `Dn` uses an upper-half wedge. `Dnh` and `Dnd` halve its angle; their transformed copies show aligned versus staggered divisions in the lower half. Axial guides are clipped to a cylinder of radius and half-height `displayRadius`.
+3. `T`, `O` and `I` use triangular cones from a polyhedron face center and two adjacent vertices. `Td`, `Oh` and `Ih` divide these at the edge midpoint. `Th` uses a four-sided cone from the positive octant where X is the largest coordinate. Polyhedral guides use radial edges and great-circle arcs at `displayRadius`.
+
+Under the unmodified operations, the unbounded source domain and its copies cover space with disjoint interiors and shared boundaries. **Point Group Test** shows the source in white and copies in blue, separately from **Sample Shape Gizmos**. Extra Transform Each operations can introduce overlap. The former Frame Gizmos checkbox is retained as Domain Gizmos. Outline geometry is rebuilt when settings change.
+
 ## Wallpaper symmetry
 
 ```csharp
@@ -97,11 +107,11 @@ var symmetry = new SpaceGroupSymmetry(
 
 `number` is the international space-group number, from 1 to 230. The generator includes each group's rotations, reflections, centering translations, screw axes and glide planes. Each group uses its first Hall setting in spglib; `name`, `hallNumber` and `setting` identify that selection. Alternative settings and custom cell metrics are not exposed.
 
-`cellSize` is a positive, uniform edge length. Trigonal and hexagonal groups (143â€“194) use a conventional hexagonal cell with 120 degrees between a and b; rhombohedral groups use their hexagonal setting. Other groups use orthogonal, equal-length cell axes. The conventional c axis is local Z. `cellBasis` converts fractional cell coordinates to Cartesian coordinates.
+`cellSize` is a positive, uniform edge length. Trigonal and hexagonal groups (143ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“194) use a conventional hexagonal cell with 120 degrees between a and b; rhombohedral groups use their hexagonal setting. Other groups use orthogonal, equal-length cell axes. The conventional c axis is local Z. `cellBasis` converts fractional cell coordinates to Cartesian coordinates.
 
 `repeats` gives positive cell counts along a, b and c. The grid starts at cell (0, 0, 0), and each cell contains the complete set of group operations. Matrix order is cell first (x, then y, then z), operation second. Matrices are affine transforms of the source; they do not wrap vertices into cell boundaries or merge coincident copies at special positions.
 
-The example project contains `Assets/Scenes/Space Group Test.unity`. Its `SpaceGroupTest` inspector offers seven crystal systems and 2â€“6 named presets per system, alongside a live model preview. An advanced number field selects any of the 230 groups. Repeats and cell size remain adjustable; group name, setting and copy count are displayed. For example, group 19 (`P2_12_12_1`) has four operations; a 2 x 2 x 2 cell window produces 32 copies.
+The example project contains `Assets/Scenes/Space Group Test.unity`. Its `SpaceGroupTest` inspector offers seven crystal systems and 2ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“6 named presets per system, alongside a live model preview. An advanced number field selects any of the 230 groups. Repeats and cell size remain adjustable; group name, setting and copy count are displayed. For example, group 19 (`P2_12_12_1`) has four operations; a 2 x 2 x 2 cell window produces 32 copies.
 
 ## Space-group drawing domains
 
@@ -164,7 +174,7 @@ var symmetry = new LayerGroupSymmetry(
 
 `number` is the international layer-group number, from 1 to 80. The generator uses conventional general-position operations from PyXtal. These include in-plane rotations and translations, reflections across the layer, and in-plane screw or glide operations that exchange the two sides of the layer. `name` gives the crystallographic symbol.
 
-`repeats` gives positive cell counts along the two lattice vectors in local XY. The grid starts at cell (0, 0). `cellSize` is the positive, uniform in-plane edge length; it does not scale the source's Z distance from the layer. Trigonal and hexagonal groups (65â€“80) use a 120-degree a/b basis. Other groups use orthogonal, equal-length in-plane axes. There is no repetition along Z.
+`repeats` gives positive cell counts along the two lattice vectors in local XY. The grid starts at cell (0, 0). `cellSize` is the positive, uniform in-plane edge length; it does not scale the source's Z distance from the layer. Trigonal and hexagonal groups (65ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“80) use a 120-degree a/b basis. Other groups use orthogonal, equal-length in-plane axes. There is no repetition along Z.
 
 Matrix order is cell first (x, then y), operation second, with exact identity in slot zero. Matrices transform the entire source, with no vertex wrapping or merging coincident copies at special positions. A source offset from Z=0 shows the operations that exchange the sides of the layer.
 
@@ -286,7 +296,7 @@ var tiling = new PenroseTiling(subdivisions: 4, radius: 5f,
 
 The generator subdivides a decagonal seed of ten Robinson triangles using the golden ratio, then pairs triangles across their shared base edges into thin and thick Penrose rhombs. At the finite patch boundary, unmatched triangles are retained as clipped half-rhombs. Shared subdivision points and edges use vertex indices, with no coordinate-tolerance matching.
 
-`subdivisions` is a nonnegative count. Increasing it produces more, smaller tiles inside the same patch. `radius` is the positive circumradius of the decagonal patch in local XY. `edgeLength` gives the complete rhomb edge length at that depth. Tile counts grow exponentially with subdivision depth; the example inspector offers levels 0â€“7.
+`subdivisions` is a nonnegative count. Increasing it produces more, smaller tiles inside the same patch. `radius` is the positive circumradius of the decagonal patch in local XY. `edgeLength` gives the complete rhomb edge length at that depth. Tile counts grow exponentially with subdivision depth; the example inspector offers levels 0ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“7.
 
 `vertices` contains the indexed patch coordinates. Each entry of `tiles` gives a thin/thick `kind` and a cyclic array of vertex `indices`. `completeRhomb` is true for four-vertex tiles and false for the three-vertex boundary fragments.
 
