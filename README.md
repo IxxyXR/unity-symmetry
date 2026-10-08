@@ -11,16 +11,25 @@ The package declares Unity 2019.4 as its minimum version in `package.json`; the 
 
 ## Visualization in the example scenes
 
-| Preview | Shared geometry source | Separate sample content |
+Every demo separates a geometric preview from its sample shapes or motifs:
+
+| Demo | Geometric preview | Meaning |
 | --- | --- | --- |
-| Wallpaper **Domain Gizmos** | `groupProperties.fundamentalRegion.points` | **Sample Shape Gizmos** |
-| Space Group **Cell Gizmos** | `SpaceGroupSymmetry.cellBasis` | **Sample Shape Gizmos** |
-| Line Group **Domain Gizmos** | `CreateDomainOutline()` | **Sample Shape Gizmos** |
-| Penrose **Show Outlines** | `PenroseTiling.vertices` and `tiles` | **Show Motifs** |
+| Point | **Frame Gizmos** | Axial rings and sectors, or tetrahedral/octahedral/icosahedral edges, in the generator's reference frame |
+| Wallpaper | **Domain Gizmos** | `groupProperties.fundamentalRegion.points` |
+| Helical | **Step Gizmos** | Axial step regions clipped to cylinders around local Y |
+| Space | **Cell Gizmos** | Conventional lattice cells from `SpaceGroupSymmetry.cellBasis` |
+| Rod | **Cell Gizmos** | Translation periods along Z, clipped to a cylinder |
+| Layer | **Cell Gizmos** | In-plane lattice cells from `LayerGroupSymmetry.cellBasis`, including 120-degree hexagonal bases |
+| Frieze | **Cell Gizmos** | Translation periods along X, clipped to a finite strip |
+| Line | **Domain Gizmos** | `CreateDomainOutline()` |
+| Penrose | **Show Outlines** | `PenroseTiling.vertices` and `tiles` |
 
-These sources also drive Open Brush's corresponding domain, cell and tile previews. Renderers, colors, display radii, insets and scene scaling belong to each application. Space previews show conventional cells, not one fundamental domain per operation. Line's Domain Radius only clips the visualization.
+All symmetry demos retain independent **Sample Shape Gizmos** toggles; Penrose instead separates **Show Motifs** from **Show Outlines**. Display Radius, Strip Half Width and Domain Radius adjust visual clipping, without changing the transforms. At zero helical advance, step previews are flat rings.
 
-Point, Helical, Rod, Layer and Frieze scenes label their illustrative shape outlines **Sample Shape Gizmos**. Those shapes show how the transforms affect a motif; they are not cells or mathematical domains. The Point scene no longer exposes its previously inactive Domain Gizmos checkbox.
+Frames, step regions and translation cells are labelled as such; they are not claimed to be fundamental domains for all group operations. Wallpaper, Space, Line and Penrose use the same domain, cell or tile sources as the corresponding Open Brush previews. Colors, insets, display extents and scene scaling belong to the application.
+
+`PointSymmetry.referenceFrame` maps the original geometric frame to the first-placement reference coordinates used by its matrices. `LayerGroupSymmetry.cellBasis` maps fractional in-plane lattice coordinates to Cartesian coordinates, retaining the original Z coordinate.
 
 ## Applying transforms
 
