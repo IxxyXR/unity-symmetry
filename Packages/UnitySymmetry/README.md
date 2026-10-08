@@ -18,7 +18,7 @@ Every demo separates a geometric preview from its sample shapes or motifs:
 | Point | **Frame Gizmos** | Axial rings and sectors, or tetrahedral/octahedral/icosahedral edges, in the generator's reference frame |
 | Wallpaper | **Domain Gizmos** | `groupProperties.fundamentalRegion.points` |
 | Helical | **Step Gizmos** | Axial step regions clipped to cylinders around local Y |
-| Space | **Domain Gizmos** | White source Dirichlet polyhedron and blue copies from `SpaceGroupSymmetry.CreateDomainOutline()` |
+| Space | **Domain Gizmos** | White source asymmetric unit and blue copies from `SpaceGroupSymmetry.CreateDomainOutline()` |
 | Rod | **Cell Gizmos** | Translation periods along Z, clipped to a cylinder |
 | Layer | **Cell Gizmos** | In-plane lattice cells from `LayerGroupSymmetry.cellBasis`, including 120-degree hexagonal bases |
 | Frieze | **Domain Gizmos** | White source drawing region and blue transformed regions from `CreateDomainOutline()` |
@@ -97,15 +97,15 @@ var symmetry = new SpaceGroupSymmetry(
 
 `number` is the international space-group number, from 1 to 230. The generator includes each group's rotations, reflections, centering translations, screw axes and glide planes. Each group uses its first Hall setting in spglib; `name`, `hallNumber` and `setting` identify that selection. Alternative settings and custom cell metrics are not exposed.
 
-`cellSize` is a positive, uniform edge length. Trigonal and hexagonal groups (143–194) use a conventional hexagonal cell with 120 degrees between a and b; rhombohedral groups use their hexagonal setting. Other groups use orthogonal, equal-length cell axes. The conventional c axis is local Z. `cellBasis` converts fractional cell coordinates to Cartesian coordinates.
+`cellSize` is a positive, uniform edge length. Trigonal and hexagonal groups (143â€“194) use a conventional hexagonal cell with 120 degrees between a and b; rhombohedral groups use their hexagonal setting. Other groups use orthogonal, equal-length cell axes. The conventional c axis is local Z. `cellBasis` converts fractional cell coordinates to Cartesian coordinates.
 
 `repeats` gives positive cell counts along a, b and c. The grid starts at cell (0, 0, 0), and each cell contains the complete set of group operations. Matrix order is cell first (x, then y, then z), operation second. Matrices are affine transforms of the source; they do not wrap vertices into cell boundaries or merge coincident copies at special positions.
 
-The example project contains `Assets/Scenes/Space Group Test.unity`. Its `SpaceGroupTest` inspector offers seven crystal systems and 2–6 named presets per system, alongside a live model preview. An advanced number field selects any of the 230 groups. Repeats and cell size remain adjustable; group name, setting and copy count are displayed. For example, group 19 (`P2_12_12_1`) has four operations; a 2 x 2 x 2 cell window produces 32 copies.
+The example project contains `Assets/Scenes/Space Group Test.unity`. Its `SpaceGroupTest` inspector offers seven crystal systems and 2â€“6 named presets per system, alongside a live model preview. An advanced number field selects any of the 230 groups. Repeats and cell size remain adjustable; group name, setting and copy count are displayed. For example, group 19 (`P2_12_12_1`) has four operations; a 2 x 2 x 2 cell window produces 32 copies.
 
 ## Space-group drawing domains
 
-`SpaceGroupSymmetry.CreateDomainOutline()` generates a convex Dirichlet domain around the general-position point `(0.173, 0.317, 0.419)` in fractional cell coordinates. The overload accepting `fractionalSeed` lets a consumer choose another general-position point. The returned outline contains Cartesian `vertices`, vertex-index-pair `edges` and the Cartesian `seed`. Geometry belongs to the package; the caller chooses rendering and colors.
+`SpaceGroupSymmetry.CreateDomainOutline()` returns a fixed asymmetric-unit outline for any of the 230 space groups. The returned outline contains Cartesian `vertices` and vertex-index-pair `edges`. Geometry belongs to the package; the caller chooses rendering and colors. There is no adjustable seed or runtime polyhedron clipping.
 
 ```csharp
 var symmetry = new SpaceGroupSymmetry(19, new Vector3Int(2, 2, 2), 2f);
@@ -121,11 +121,11 @@ foreach (var operation in symmetry.matrices)
 }
 ```
 
-Each face lies halfway between the seed and a symmetry-equivalent neighbour. The source domain and its transformed copies have disjoint interiors and shared boundaries for unmodified operations. This is a fundamental drawing region, rather than a whole conventional translation cell. It is a [Dirichlet domain](https://journals.iucr.org/a/issues/2020/05/00/sc5138/index.html), rather than the tabulated asymmetric-unit shape of International Tables.
+The outlines are derived from the [CCTBX asymmetric-unit reference table](https://github.com/cctbx/cctbx_project/blob/a918c3666b2065fc68b927c0f5c903a7f9042395/cctbx/sgtbx/direct_space_asu/reference_table.py), converted to the same first spglib Hall setting used by the transform generator, including alternative origins. Boundary ownership conditions are omitted: the closed outlines share faces, but their interiors are disjoint under the unmodified space-group operations. The complete infinite orbit fills space; a finite repeat window displays only the selected copies and can leave gaps near its edges. Transform matrices are unchanged.
 
-The implementation clips a convex polyhedron using the existing Cartesian group operations and neighbouring lattice translations. It supports the package's equal-edge orthogonal and conventional hexagonal metrics; the repeat window changes which domain copies are displayed, not the source domain geometry. Numerical clipping uses a tolerance of `0.00001 * cellSize`. A seed fixed by a nonidentity operation, modulo translations, is rejected: it would give coincident orbit points instead of one distinct region per operation.
+Group 4 (`P2_1`, unique Y axis) uses a simpler equivalent box: fractional X and Z range from `-1/2` to `1/2`, and Y from `0` to `1/2`. Its screw operation `(-x, y + 1/2, -z)` places a matching box directly above it, filling a conventional cell. Other groups use boxes, wedges or small polyhedra, with 6 to 16 edges per source outline. More operations or repeats still increase the total number of displayed edges.
 
-In **Space Group Test**, **Domain Gizmos** shows the source in white and transformed copies in blue, independently from **Sample Shape Gizmos**. **Domain Seed (fractional)** adjusts where the source region lies. Place source geometry within the white region using Transform Before. The outlines follow the same Transform Each operations as the motifs; extra transforms can introduce overlap. The old Cell Gizmos setting is retained under the renamed Domain Gizmos checkbox. Generation runs when settings change, rather than on each gizmo repaint.
+In **Space Group Test**, **Domain Gizmos** shows the source in white and transformed copies in blue, independently from **Sample Shape Gizmos**. Place source geometry within the white region using Transform Before. The outlines follow the same Transform Each operations as the motifs; extra transforms can introduce overlap. The old Cell Gizmos setting is retained under the renamed Domain Gizmos checkbox. Source geometry is scaled by the conventional cell basis when settings change.
 
 ## Space-group selection
 
@@ -164,7 +164,7 @@ var symmetry = new LayerGroupSymmetry(
 
 `number` is the international layer-group number, from 1 to 80. The generator uses conventional general-position operations from PyXtal. These include in-plane rotations and translations, reflections across the layer, and in-plane screw or glide operations that exchange the two sides of the layer. `name` gives the crystallographic symbol.
 
-`repeats` gives positive cell counts along the two lattice vectors in local XY. The grid starts at cell (0, 0). `cellSize` is the positive, uniform in-plane edge length; it does not scale the source's Z distance from the layer. Trigonal and hexagonal groups (65–80) use a 120-degree a/b basis. Other groups use orthogonal, equal-length in-plane axes. There is no repetition along Z.
+`repeats` gives positive cell counts along the two lattice vectors in local XY. The grid starts at cell (0, 0). `cellSize` is the positive, uniform in-plane edge length; it does not scale the source's Z distance from the layer. Trigonal and hexagonal groups (65â€“80) use a 120-degree a/b basis. Other groups use orthogonal, equal-length in-plane axes. There is no repetition along Z.
 
 Matrix order is cell first (x, then y), operation second, with exact identity in slot zero. Matrices transform the entire source, with no vertex wrapping or merging coincident copies at special positions. A source offset from Z=0 shows the operations that exchange the sides of the layer.
 
@@ -286,7 +286,7 @@ var tiling = new PenroseTiling(subdivisions: 4, radius: 5f,
 
 The generator subdivides a decagonal seed of ten Robinson triangles using the golden ratio, then pairs triangles across their shared base edges into thin and thick Penrose rhombs. At the finite patch boundary, unmatched triangles are retained as clipped half-rhombs. Shared subdivision points and edges use vertex indices, with no coordinate-tolerance matching.
 
-`subdivisions` is a nonnegative count. Increasing it produces more, smaller tiles inside the same patch. `radius` is the positive circumradius of the decagonal patch in local XY. `edgeLength` gives the complete rhomb edge length at that depth. Tile counts grow exponentially with subdivision depth; the example inspector offers levels 0–7.
+`subdivisions` is a nonnegative count. Increasing it produces more, smaller tiles inside the same patch. `radius` is the positive circumradius of the decagonal patch in local XY. `edgeLength` gives the complete rhomb edge length at that depth. Tile counts grow exponentially with subdivision depth; the example inspector offers levels 0â€“7.
 
 `vertices` contains the indexed patch coordinates. Each entry of `tiles` gives a thin/thick `kind` and a cyclic array of vertex `indices`. `completeRhomb` is true for four-vertex tiles and false for the three-vertex boundary fragments.
 
@@ -304,4 +304,5 @@ To regenerate the catalog from the repository root:
 
 ```sh
 uv run --python 3.12 --with spglib==2.7.0 Tools/generate_space_groups.py
+uv run --python 3.12 --with gemmi==0.7.3 --with spglib==2.7.0 Tools/generate_space_group_domains.py
 ```

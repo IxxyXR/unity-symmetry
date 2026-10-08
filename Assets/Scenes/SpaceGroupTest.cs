@@ -30,7 +30,6 @@ public class SpaceGroupTest : MonoBehaviour
     [BoxGroup("Gizmos"), InspectorName("Sample Shape Gizmos")] public bool symmetryGizmos;
 
     [BoxGroup("Gizmos"), UnityEngine.Serialization.FormerlySerializedAs("cellGizmos")] public bool domainGizmos;
-    [BoxGroup("Gizmos"), InspectorName("Domain Seed (fractional)")] public Vector3 domainSeed = new Vector3(0.173f, 0.317f, 0.419f);
 
     private SpaceGroupSymmetry sym;
     private SpaceGroupSymmetry.DomainOutline domainOutline;
@@ -42,7 +41,7 @@ public class SpaceGroupTest : MonoBehaviour
     {
         repeats = Vector3Int.Max(repeats, Vector3Int.one);
         sym = new SpaceGroupSymmetry(spaceGroup, repeats, cellSize);
-        domainOutline = sym.CreateDomainOutline(domainSeed);
+        domainOutline = sym.CreateDomainOutline();
         groupName = sym.name;
         setting = sym.setting;
         copyCount = sym.matrices.Count;

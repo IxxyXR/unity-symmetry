@@ -20,7 +20,7 @@
 3. Line groups accept zero advance for rotation/reflection samples at one axial position, with flat preview outlines.
 4. Every demo offers a geometric preview independently from sample shapes or motifs: point frames, wallpaper domains, helical step regions, rod/layer cells, space/frieze/line domains and Penrose outlines. Layer cell bases and point reference frames are exposed for visualization consumers.
 5. Frieze previews use group-specific source drawing domains and their transformed copies, replacing whole-period strip cells.
-6. Space-group previews use reusable Dirichlet drawing domains, with white source regions and blue transformed copies instead of conventional cell boxes.
+6. Space-group previews use fixed asymmetric-unit outlines for all 230 groups, matched to their Hall settings, with white source regions and blue transformed copies. Simple boxes, wedges and small polyhedra replace seed-dependent Dirichlet domains; P2_1 uses a half-cell box.
 7. The documentation now covers installation, all supported generators and shared transform conventions.
 
 This section records the additions since the original point/wallpaper implementation; it does not assign a new package version or release date.
