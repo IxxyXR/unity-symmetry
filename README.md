@@ -169,7 +169,7 @@ var symmetry = new LineGroupSymmetry(
 
 The generator implements the thirteen line-group families in Damnjanovic and Milosevic, *Line Groups in Physics* (2010), Table 2.2. The local line axis is Z. Unlike crystallographic rod groups, `n` can be any positive axial rotation order, including fivefold and sevenfold. It is the order of the pure axial rotation subgroup, so each step includes n rotations of the motif.
 
-`repeats` is a positive count of generalized steps, beginning at zero. `advance` is the positive distance along Z per step. The general screw families (1 and 5) use the supplied twist angle; clockwise and counterclockwise twists are allowed. `UsesFreeAngle(family)` identifies these two families. For other families the angle parameter is ignored and the family determines the compatible operation:
+`repeats` is a positive count of generalized steps, beginning at zero. `advance` is the nonnegative distance along Z per step. Zero advance produces rotation/reflection samples at a single axial position; repeated placements are retained. The general screw families (1 and 5) use the supplied twist angle; clockwise and counterclockwise twists are allowed. `UsesFreeAngle(family)` identifies these two families. For other families the angle parameter is ignored and the family determines the compatible operation:
 
 | Family | Operation along Z | Additional motif symmetry | Copies per step |
 |---|---|---|---|
@@ -211,7 +211,7 @@ Vector3[] continuousPath = outline.GetWirePath();
 
 The display radius clips the domain to a cylinder; it is not a group parameter and does not change copy transforms. The optional `arcSegments` argument (default 48) controls the straight-line approximation per full circle. `edges` are vertex-index pairs. `GetWirePath()` returns a continuous outline that retraces edges without introducing interior diagonals. No renderers or GameObjects are created.
 
-Screw families rotate the sectors between steps. Their domain remains usable when the screw angle has no pure translation period. The non-overlap statement applies to the unmodified group operations; arbitrary additional transforms applied separately to each domain can make them overlap.
+Screw families rotate the sectors between steps. Their domain remains usable when the screw angle has no pure translation period. At zero advance the outline is flat, and repeated rotations or reflections can overlap; it is a preview rather than a 3D fundamental domain. The non-overlap statement applies to positive advance and the unmodified group operations; arbitrary additional transforms applied separately to each domain can make them overlap.
 
 ## Penrose tiling
 
