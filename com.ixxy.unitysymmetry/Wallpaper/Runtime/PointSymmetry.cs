@@ -72,11 +72,14 @@ public class PointSymmetry {
     {
         public readonly Vector3[] vertices;
         public readonly Vector2Int[] edges;
+        // Subset of edges at the curved display cutoff, for independent styling.
+        public readonly Vector2Int[] arcEdges;
 
-        internal DomainOutline(List<Vector3> vertices, List<Vector2Int> edges)
+        internal DomainOutline(List<Vector3> vertices, List<Vector2Int> edges, List<Vector2Int> arcEdges)
         {
             this.vertices = vertices.ToArray();
             this.edges = edges.ToArray();
+            this.arcEdges = arcEdges.ToArray();
         }
     }
 
@@ -92,6 +95,13 @@ public class PointSymmetry {
         if (arcSegments < 3) throw new ArgumentOutOfRangeException(nameof(arcSegments));
         var vertices = new List<Vector3>();
         var edges = new List<Vector2Int>();
+        var arcEdges = new List<Vector2Int>();
+        void AddArcEdge(int first, int second)
+        {
+            var edge = new Vector2Int(first, second);
+            edges.Add(edge);
+            arcEdges.Add(edge);
+        }
         var sourcePlacement = Matrix4x4.identity;
         if (family <= Family.Dnd)
         {
@@ -117,7 +127,7 @@ public class PointSymmetry {
                 }
                 for (var i = 0; i < vertices.Count; i++)
                     vertices[i] = referenceFrame.MultiplyPoint3x4(vertices[i]);
-                return new DomainOutline(vertices, edges);
+                return new DomainOutline(vertices, edges, arcEdges);
             }
             var segments = drawArcs
                 ? Mathf.Max(1, Mathf.CeilToInt(arcSegments * angle / (2f * Mathf.PI))) : 1;
@@ -131,9 +141,9 @@ public class PointSymmetry {
                     var phi = start + angle * i / segments;
                     vertices.Add(new Vector3(Mathf.Sin(phi) * displayRadius, height,
                         Mathf.Cos(phi) * displayRadius));
-                    if (drawArcs && i > 0) edges.Add(new Vector2Int(level * count + i - 1, level * count + i));
+                    if (drawArcs && i > 0) AddArcEdge(level * count + i - 1, level * count + i);
                 }
-                if (fullCircle) edges.Add(new Vector2Int(level * count + count - 1, level * count));
+                if (fullCircle) AddArcEdge(level * count + count - 1, level * count);
             }
             if (!fullCircle)
             {
@@ -210,14 +220,14 @@ public class PointSymmetry {
                         index = vertices.Count;
                         vertices.Add(Vector3.Slerp(corners[side], corners[next], (float)step / segments) * displayRadius);
                     }
-                    edges.Add(new Vector2Int(previous, index));
+                    AddArcEdge(previous, index);
                     previous = index;
                 }
             }
         }
         for (var i = 0; i < vertices.Count; i++)
             vertices[i] = sourcePlacement.MultiplyPoint3x4(referenceFrame.MultiplyPoint3x4(vertices[i]));
-        return new DomainOutline(vertices, edges);
+        return new DomainOutline(vertices, edges, arcEdges);
     }
 
     public PointSymmetry(Family pointGroupFamily, int _n, float _radius)
