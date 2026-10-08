@@ -229,6 +229,8 @@ MonoBehaviour:
   ScaleEach: {x: 1, y: 1, z: 1}
   ApplyAfter: 1
   symmetryGizmos: 1
+  stepGizmos: 1
+  displayRadius: 1
 --- !u!1 &1774762980
 GameObject:
   m_ObjectHideFlags: 0
