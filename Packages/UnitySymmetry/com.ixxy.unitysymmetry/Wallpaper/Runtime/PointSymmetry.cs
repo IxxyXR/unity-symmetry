@@ -84,7 +84,7 @@ public class PointSymmetry {
     /// Axial wedges are clipped to a cylinder; polyhedral cones to a sphere.
     /// Display extent changes only the outline, not the symmetry operations.</summary>
     /// <param name="drawArcs">Use curved cutoff edges. When false, axial guides
-    /// show straight boundary faces and polyhedral cones close with chords.</param>
+    /// show straight boundary faces and polyhedral guides show only cone rays.</param>
     public DomainOutline CreateDomainOutline(float displayRadius, int arcSegments = 48, bool drawArcs = true)
     {
         if (displayRadius <= 0 || float.IsNaN(displayRadius) || float.IsInfinity(displayRadius))
@@ -196,11 +196,11 @@ public class PointSymmetry {
                 vertices.Add(corner * displayRadius);
                 edges.Add(new Vector2Int(0, vertices.Count - 1));
             }
-            for (var side = 0; side < corners.Length; side++)
+            for (var side = 0; drawArcs && side < corners.Length; side++)
             {
                 var next = (side + 1) % corners.Length;
-                var segments = drawArcs ? Mathf.Max(1, Mathf.CeilToInt(arcSegments
-                    * Vector3.Angle(corners[side], corners[next]) / 360f)) : 1;
+                var segments = Mathf.Max(1, Mathf.CeilToInt(arcSegments
+                    * Vector3.Angle(corners[side], corners[next]) / 360f));
                 var previous = side + 1;
                 for (var step = 1; step <= segments; step++)
                 {
