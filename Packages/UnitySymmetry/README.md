@@ -72,6 +72,8 @@ The example project contains `Assets/Scenes/Point Group Test.unity`. Its `PointG
 2. `Dn` uses an upper-half wedge. `Dnh` and `Dnd` halve its angle; their transformed copies show aligned versus staggered divisions in the lower half. Axial guides are clipped to a cylinder of radius and half-height `displayRadius`.
 3. `T`, `O` and `I` use triangular cones from a polyhedron face center and two adjacent vertices. `Td`, `Oh` and `Ih` divide these at the edge midpoint. `Th` uses a four-sided cone from the positive octant where X is the largest coordinate. Polyhedral guides use radial edges and great-circle arcs at `displayRadius`.
 
+The outline's `arcEdges` identifies the subset of `edges` at the curved display cutoff. Consumers can style those arcs independently from the straight domain boundaries.
+
 For a less cluttered preview, call `CreateDomainOutline(displayRadius, drawArcs: false)`. Axial wedges retain their straight boundary-face outlines without the outer cylinder arcs. A single horizontal symmetry boundary is shown as a square; the identity-only group has no boundaries to draw. Polyhedral cones show only their radial rays, with no closing edges at the display cutoff. This changes only the display cutoff, not the symmetry boundaries or operations.
 
 Under the unmodified operations, the unbounded source domain and its copies cover space with disjoint interiors and shared boundaries. **Point Group Test** shows the source in white and copies in blue, separately from **Sample Shape Gizmos**. Extra Transform Each operations can introduce overlap. The former Frame Gizmos checkbox is retained as Domain Gizmos. Outline geometry is rebuilt when settings change.
