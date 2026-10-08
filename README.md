@@ -21,7 +21,7 @@ Every demo separates a geometric preview from its sample shapes or motifs:
 | Space | **Cell Gizmos** | Conventional lattice cells from `SpaceGroupSymmetry.cellBasis` |
 | Rod | **Cell Gizmos** | Translation periods along Z, clipped to a cylinder |
 | Layer | **Cell Gizmos** | In-plane lattice cells from `LayerGroupSymmetry.cellBasis`, including 120-degree hexagonal bases |
-| Frieze | **Cell Gizmos** | Translation periods along X, clipped to a finite strip |
+| Frieze | **Domain Gizmos** | White source drawing region and blue transformed regions from `CreateDomainOutline()` |
 | Line | **Domain Gizmos** | `CreateDomainOutline()` |
 | Penrose | **Show Outlines** | `PenroseTiling.vertices` and `tiles` |
 
@@ -180,6 +180,22 @@ The enum follows International Tables for Crystallography, Volume E numbering:
 Mirrors perpendicular to the strip lie at X=0 for the first period; parallel mirrors lie at Y=0. For p2mg, the glide advances by half a period and the half-turn centers are offset by a quarter period from the perpendicular mirrors.
 
 The example project contains `Assets/Scenes/Frieze Test.unity`. Its inspector offers all seven groups in one selector, adjustable repeats and period, and a live model preview. It starts with p2mg across six periods, producing 24 copies. An asymmetric motif offset from the strip axis makes the mirror and glide operations visible. The runtime is implemented directly from the seven group definitions, with no database or external dependency.
+
+## Frieze drawing regions
+
+`FriezeSymmetry.CreateDomainOutline(stripHalfWidth)` returns a four-vertex source region in local XY. Apply each `matrices` entry to that polygon to preview the drawing's destinations. `domainXRange` describes its X interval; `domainAboveAxis` identifies groups whose source region occupies the positive side of the axis. The Y extent is a display clip, not a limit on the symmetry.
+
+| Group | Source X interval | Source Y extent |
+| --- | --- | --- |
+| `p1` | -period/2 to period/2 | Both sides |
+| `p2` | -period/2 to period/2 | Above axis |
+| `p1m1` | 0 to period/2 | Both sides |
+| `p11m` | -period/2 to period/2 | Above axis |
+| `p11g` | -period/4 to period/4 | Both sides |
+| `p2mm` | 0 to period/2 | Above axis |
+| `p2mg` | 0 to period/2 | Above axis |
+
+In **Frieze Test**, **Domain Gizmos** shows the source region in white and its actual transformed copies in blue. **Sample Shape Gizmos** remains independent. The domains use the same Transform Each operations as the motifs, while Transform Before positions the source motif within the drawing region. Unmodified domain interiors do not overlap; crossing a source boundary or using additional Transform Each operations can introduce overlap. The old Cell Gizmos setting is retained under the renamed Domain Gizmos checkbox.
 
 ## General line-group symmetry
 
