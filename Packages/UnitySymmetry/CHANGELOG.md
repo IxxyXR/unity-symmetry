@@ -11,6 +11,7 @@
 5. Penrose thin/thick rhomb patches, indexed tile geometry, boundary half-rhombs and motif placements. A tile selector creates transforms for Thin, Thick or Both while retaining the full patch geometry.
 6. Interactive example scenes and live inspector previews for each added generator.
 7. Reproducible space-, rod- and layer-group table generation tools and third-party attribution.
+8. Line-group fundamental-domain extents and radially clipped outline geometry, with indexed edges and a continuous wire path.
 
 ### Changed
 

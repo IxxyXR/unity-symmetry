@@ -195,6 +195,24 @@ The example project contains `Assets/Scenes/Line Group Test.unity`, with one thi
 
 Reference: https://doi.org/10.1007/978-3-642-11172-3
 
+## Line-group domains
+
+`LineGroupSymmetry` also describes a fundamental domain through `domainAngleDegrees` and `domainZRange`. Its angle starts at local +X towards +Y, and its radial extent is unbounded. Rotations give a sector of 360/n degrees; a Z-preserving mirror halves that angle. Families with a Z-reversing operation use the positive half-step, from Z=0 to `advance/2`; other families use the full step centered on Z=0. Applying the group operations fills angular sectors and successive axial steps with disjoint interiors and shared boundaries.
+
+```csharp
+var symmetry = new LineGroupSymmetry(
+    LineGroupSymmetry.Family.ScrewHalfTurns,
+    n: 5, repeats: 8, advance: 1.1f, angleDegrees: 27f);
+var outline = symmetry.CreateDomainOutline(radius: 1.5f);
+// outline.vertices and outline.edges describe one domain in local coordinates.
+// Apply each symmetry matrix to these vertices to preview its domain copy.
+Vector3[] continuousPath = outline.GetWirePath();
+```
+
+The display radius clips the domain to a cylinder; it is not a group parameter and does not change copy transforms. The optional `arcSegments` argument (default 48) controls the straight-line approximation per full circle. `edges` are vertex-index pairs. `GetWirePath()` returns a continuous outline that retraces edges without introducing interior diagonals. No renderers or GameObjects are created.
+
+Screw families rotate the sectors between steps. Their domain remains usable when the screw angle has no pure translation period. The non-overlap statement applies to the unmodified group operations; arbitrary additional transforms applied separately to each domain can make them overlap.
+
 ## Penrose tiling
 
 ```csharp

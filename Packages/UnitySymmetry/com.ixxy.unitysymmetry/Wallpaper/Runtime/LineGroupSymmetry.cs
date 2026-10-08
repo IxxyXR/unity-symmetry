@@ -25,6 +25,96 @@ public sealed class LineGroupSymmetry
 
     public readonly List<Matrix4x4> matrices;
     public readonly string name;
+    /// <summary>Angular extent of a fundamental domain, starting at local +X towards +Y.</summary>
+    public readonly float domainAngleDegrees;
+    /// <summary>Local Z bounds of a fundamental domain. Its radial extent is unbounded.</summary>
+    public readonly Vector2 domainZRange;
+
+    public sealed class DomainOutline
+    {
+        public readonly Vector3[] vertices;
+        public readonly Vector2Int[] edges;
+
+        internal DomainOutline(Vector3[] vertices, Vector2Int[] edges)
+        {
+            this.vertices = vertices;
+            this.edges = edges;
+        }
+
+        /// <summary>A continuous edge walk, retracing edges so no interior diagonals are drawn.</summary>
+        public Vector3[] GetWirePath()
+        {
+            var path = new List<Vector3> { vertices[0] };
+            var visited = new bool[edges.Length];
+            void Walk(int vertex)
+            {
+                for (var i = 0; i < edges.Length; i++)
+                {
+                    if (visited[i] || edges[i].x != vertex && edges[i].y != vertex) continue;
+                    visited[i] = true;
+                    var next = edges[i].x == vertex ? edges[i].y : edges[i].x;
+                    path.Add(vertices[next]);
+                    Walk(next);
+                    path.Add(vertices[vertex]);
+                }
+            }
+            Walk(0);
+            return path.ToArray();
+        }
+    }
+
+    /// <summary>Clip the radially unbounded domain to a cylinder for visualization.
+    /// Curved outer boundaries are approximated by straight segments; matrices are unchanged.</summary>
+    /// <param name="radius">Positive display radius, independent of the group's axial period.</param>
+    /// <param name="arcSegments">Segments per full circle, at least three.</param>
+    public DomainOutline CreateDomainOutline(float radius, int arcSegments = 48)
+    {
+        if (radius <= 0 || float.IsNaN(radius) || float.IsInfinity(radius))
+            throw new ArgumentOutOfRangeException(nameof(radius));
+        if (arcSegments < 3) throw new ArgumentOutOfRangeException(nameof(arcSegments));
+        var fullCircle = domainAngleDegrees == 360f;
+        var segments = Mathf.Max(1, Mathf.CeilToInt(arcSegments * domainAngleDegrees / 360f));
+        var arcPoints = fullCircle ? segments : segments + 1;
+        var vertices = new List<Vector3>();
+        var edges = new List<Vector2Int>();
+        for (var level = 0; level < 2; level++)
+        {
+            var offset = vertices.Count;
+            var z = level == 0 ? domainZRange.x : domainZRange.y;
+            for (var i = 0; i < arcPoints; i++)
+            {
+                var angle = Mathf.Deg2Rad * domainAngleDegrees * i / segments;
+                vertices.Add(new Vector3(radius * Mathf.Cos(angle), radius * Mathf.Sin(angle), z));
+                if (i > 0) edges.Add(new Vector2Int(offset + i - 1, offset + i));
+            }
+            if (fullCircle) edges.Add(new Vector2Int(offset + arcPoints - 1, offset));
+        }
+        edges.Add(new Vector2Int(0, arcPoints));
+        if (fullCircle)
+        {
+            // Four longitudinal edges make the cylindrical extent readable.
+            for (var i = 1; i < 4; i++)
+            {
+                var index = i * segments / 4;
+                if (index > (i - 1) * segments / 4)
+                    edges.Add(new Vector2Int(index, index + arcPoints));
+            }
+        }
+        else
+        {
+            edges.Add(new Vector2Int(arcPoints - 1, 2 * arcPoints - 1));
+            var lowerAxis = vertices.Count;
+            vertices.Add(new Vector3(0, 0, domainZRange.x));
+            var upperAxis = vertices.Count;
+            vertices.Add(new Vector3(0, 0, domainZRange.y));
+            edges.Add(new Vector2Int(lowerAxis, 0));
+            edges.Add(new Vector2Int(lowerAxis, arcPoints - 1));
+            edges.Add(new Vector2Int(upperAxis, arcPoints));
+            edges.Add(new Vector2Int(upperAxis, 2 * arcPoints - 1));
+            edges.Add(new Vector2Int(lowerAxis, upperAxis));
+        }
+        return new DomainOutline(vertices.ToArray(), edges.ToArray());
+    }
 
     public static bool UsesFreeAngle(Family family) => family == Family.ScrewRotations || family == Family.ScrewHalfTurns;
 
@@ -76,6 +166,14 @@ public sealed class LineGroupSymmetry
                 cosets.Add(horizontalMirror);
                 break;
         }
+
+        // A Z-preserving mirror halves the angular sector. Any Z-reversing coset
+        // halves the step height; its images fill the negative half of each step.
+        var dividesAngle = cosets.Exists(m => m.m22 > 0 && m.m00 * m.m11 - m.m01 * m.m10 < 0);
+        var dividesHeight = cosets.Exists(m => m.m22 < 0);
+        domainAngleDegrees = (dividesAngle ? 180f : 360f) / n;
+        domainZRange = dividesHeight ? new Vector2(0, advance * 0.5f)
+            : new Vector2(-advance * 0.5f, advance * 0.5f);
 
         var halfStep = family == Family.HalfStepHorizontalMirror || family == Family.HalfStepVerticalMirrors
             || family == Family.HalfStepFullMirrors;
