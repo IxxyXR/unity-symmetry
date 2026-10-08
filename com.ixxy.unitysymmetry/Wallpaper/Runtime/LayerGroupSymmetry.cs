@@ -7,6 +7,7 @@ public sealed class LayerGroupSymmetry
 {
     public readonly List<Matrix4x4> matrices;
     public readonly string name;
+    public readonly Matrix4x4 cellBasis;
 
     /// <param name="number">International layer-group number (1 to 80).</param>
     /// <param name="repeats">Positive cell counts along the two in-plane lattice vectors.</param>
@@ -22,6 +23,7 @@ public sealed class LayerGroupSymmetry
         var basis = Matrix4x4.Scale(new Vector3(cellSize, cellSize, 1));
         if (number >= 65)
             basis.SetColumn(1, new Vector4(-0.5f * cellSize, Mathf.Sqrt(3f) * 0.5f * cellSize, 0, 0));
+        cellBasis = basis;
         var inverseBasis = basis.inverse;
         var operations = LayerGroupData.Operations[number - 1];
         var cellOperations = new List<Matrix4x4>(operations.Length / 12);

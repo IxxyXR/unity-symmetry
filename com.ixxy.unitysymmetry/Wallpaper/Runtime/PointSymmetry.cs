@@ -38,6 +38,8 @@ public class PointSymmetry {
     public readonly Family family;
     public readonly int n;
     public readonly float radius;
+    // Converts the original geometric frame into the first-placement reference frame.
+    public readonly Matrix4x4 referenceFrame;
 
     private List<Matrix4x4> getRotations(float angle)
     {
@@ -150,6 +152,7 @@ public class PointSymmetry {
         // Use the first placement as the reference frame, as in WallpaperSymmetry.
         // Every point group then has an unchanged main pointer in slot zero.
         var firstInverse = matrices[0].inverse;
+        referenceFrame = firstInverse;
         for (var i = 1; i < matrices.Count; i++)
         {
             matrices[i] = firstInverse * matrices[i];
