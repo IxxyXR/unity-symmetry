@@ -60,13 +60,13 @@ var symmetry = new PointSymmetry(
     pointGroupFamily: PointSymmetry.Family.Cnv, _n: 5, _radius: 1f);
 ```
 
-`Family` includes `Cn`, `Cnv`, `Cnh`, `Sn`, `Dn`, `Dnh`, `Dnd`, `T`, `Th`, `Td`, `O`, `Oh`, `I` and `Ih`. Supply a positive `_n`; it controls axial families. The polyhedral families use their fixed geometry. `_radius` is used in the source placement construction, and the resulting matrices are expressed relative to the first placement so that the original remains unchanged. Axial rotations use local Y.
+`Family` includes `Cn`, `Cnv`, `Cnh`, `Sn`, `Dn`, `Dnh`, `Dnd`, `T`, `Th`, `Td`, `O`, `Oh`, `I` and `Ih`. Supply a positive `_n`; it controls axial families. The polyhedral families use their fixed geometry. `_radius` is an intermediate placement offset that cancels during normalization. The resulting operations preserve the geometric origin and have identity in slot zero. Axial rotations use local Y; polyhedral operations retain the original geometric axes.
 
 The example project contains `Assets/Scenes/Point Group Test.unity`. Its `PointGroupTest` component exposes family, order, radius, source transforms and transforms applied to each copy.
 
 ### Point-group drawing domains
 
-`PointSymmetry.CreateDomainOutline(displayRadius)` returns Cartesian `vertices` and vertex-index-pair `edges` in the same first-placement reference coordinates as `matrices`. Apply those matrices to the outline to show the source region and its copies. Domains extend indefinitely; `displayRadius` clips the drawing guide without changing any transforms. The symmetry center is at `(0, 0, radius)` in this reference frame. The source region includes the direction from that center to the unchanged main pointer; the display extent can still clip its position.
+`PointSymmetry.CreateDomainOutline(displayRadius)` returns Cartesian `vertices` and vertex-index-pair `edges` in the same geometric coordinates as `matrices`. Apply those matrices to the outline to show the source region and its copies. The symmetry center is at `(0, 0, 0)`. Domains extend indefinitely; `displayRadius` clips the drawing guide without changing any transforms. Polyhedral guides select an equivalent source cone containing the local -Z reference direction.
 
 1. `Cn` uses a full-height angular wedge; `Cnv` halves its angle and `Cnh` uses only its upper half. `Sn` uses narrower full-height wedges, with alternating copies reflected vertically.
 2. `Dn` uses an upper-half wedge. `Dnh` and `Dnd` halve its angle; their transformed copies show aligned versus staggered divisions in the lower half. Axial guides are clipped to a cylinder of radius and half-height `displayRadius`.
