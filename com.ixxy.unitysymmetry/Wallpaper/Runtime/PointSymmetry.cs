@@ -38,8 +38,6 @@ public class PointSymmetry {
     public readonly Family family;
     public readonly int n;
     public readonly float radius;
-    // Converts the original geometric frame into the first-placement reference frame.
-    public readonly Matrix4x4 referenceFrame;
 
     private List<Matrix4x4> getRotations(float angle)
     {
@@ -83,7 +81,7 @@ public class PointSymmetry {
         }
     }
 
-    /// <summary>A source drawing region in the first-placement reference frame.
+    /// <summary>A source drawing region in the original geometric frame.
     /// Axial wedges are clipped to a cylinder; polyhedral cones to a sphere.
     /// Display extent changes only the outline, not the symmetry operations.</summary>
     /// <param name="drawArcs">Use curved cutoff edges. When false, axial guides
@@ -125,8 +123,6 @@ public class PointSymmetry {
                     vertices.Add(Vector3.back * displayRadius);
                     for (var i = 0; i < 4; i++) edges.Add(new Vector2Int(i, (i + 1) % 4));
                 }
-                for (var i = 0; i < vertices.Count; i++)
-                    vertices[i] = referenceFrame.MultiplyPoint3x4(vertices[i]);
                 return new DomainOutline(vertices, edges, arcEdges);
             }
             var segments = drawArcs
@@ -183,15 +179,14 @@ public class PointSymmetry {
                 // face reflections splits it at the midpoint of its outer edge.
                 corners = new[] {center, first, last};
             }
-            // Select an equivalent cone containing the direction from the
-            // symmetry center to the unchanged main pointer (the source origin).
+            // Select an equivalent cone containing the -Z reference direction.
             var normals = new Vector3[corners.Length];
             var interior = average(corners.ToList());
             for (var side = 0; side < corners.Length; side++)
             {
                 var normal = Vector3.Cross(corners[side], corners[(side + 1) % corners.Length]).normalized;
                 if (Vector3.Dot(normal, interior) < 0) normal = -normal;
-                normals[side] = referenceFrame.MultiplyVector(normal);
+                normals[side] = normal;
             }
             foreach (var operation in matrices)
             {
@@ -226,7 +221,7 @@ public class PointSymmetry {
             }
         }
         for (var i = 0; i < vertices.Count; i++)
-            vertices[i] = sourcePlacement.MultiplyPoint3x4(referenceFrame.MultiplyPoint3x4(vertices[i]));
+            vertices[i] = sourcePlacement.MultiplyPoint3x4(vertices[i]);
         return new DomainOutline(vertices, edges, arcEdges);
     }
 
@@ -311,13 +306,13 @@ public class PointSymmetry {
                 break;
         }
 
-        // Use the first placement as the reference frame, as in WallpaperSymmetry.
-        // Every point group then has an unchanged main pointer in slot zero.
+        // Map the first placement to each copy without changing the geometric frame.
+        // Right multiplication cancels the source placement; left multiplication
+        // would move the symmetry center and axes into that placement's frame.
         var firstInverse = matrices[0].inverse;
-        referenceFrame = firstInverse;
         for (var i = 1; i < matrices.Count; i++)
         {
-            matrices[i] = firstInverse * matrices[i];
+            matrices[i] = matrices[i] * firstInverse;
         }
         matrices[0] = Matrix4x4.identity;
     }
