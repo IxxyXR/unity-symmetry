@@ -600,6 +600,19 @@ public class SymmetryGroup
         }
     }
 
+    // Rebase the domain and its operations together; lattice vectors are unchanged.
+    internal void AnchorDomainAtOrigin()
+    {
+        var origin = fundamentalRegion.points[0];
+        var toOrigin = Matrix4x4.Translate(-origin);
+        var fromOrigin = Matrix4x4.Translate(origin);
+        for (var i = 0; i < fundamentalRegion.points.Length; i++)
+            fundamentalRegion.points[i] -= origin;
+        center -= origin;
+        for (var i = 0; i < cosetReps.Length; i++)
+            cosetReps[i] = toOrigin * cosetReps[i] * fromOrigin;
+    }
+
     public Vector2 getTranslationX()
     {
         return translationX;
