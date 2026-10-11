@@ -86,7 +86,7 @@ var symmetry = new WallpaperSymmetry(
     _finalScale: 1f, _w: 1f, _h: 1f, _sx: 0f, _sy: 0f);
 ```
 
-`SymmetryGroup.R` selects one of the seventeen wallpaper groups. The pattern lies in local XY. `_repeatX` and `_repeatY` control the finite repeat window; `_w`, `_h`, `_sx` and `_sy` feed group-specific width, height and skew parameters. Not every group uses every parameter. `_finalScale` scales both translations and geometry in the simple constructor.
+`SymmetryGroup.R` selects one of the seventeen wallpaper groups. The pattern lies in local XY. `_repeatX` and `_repeatY` control the finite repeat window; `_w`, `_h`, `_sx` and `_sy` feed group-specific width, height and skew parameters. Not every group uses every parameter. The simple constructor anchors the first vertex of the source domain at local `(0, 0)` and rebases rotation centers and mirror lines with it; cell dimensions and lattice vectors are unchanged. `_finalScale` scales both translations and geometry in the simple constructor.
 
 The advanced overload accepts `_tileSize`, `_unitScale`, `_unitOffset`, `_spacing`, `d` and `_finalScale` after the group and repeat counts. It retains the legacy low-level behavior: `_finalScale` is unused in this overload, and it does not rebase its first placement to identity. `groupProperties` exposes the underlying domain and lattice information; `UnitOffset` and `D` expose the generated simple settings.
 

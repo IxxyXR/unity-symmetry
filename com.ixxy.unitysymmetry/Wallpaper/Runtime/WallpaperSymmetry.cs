@@ -118,19 +118,18 @@ public class WallpaperSymmetry
         }
 
         groupProperties = new SymmetryGroup(_group, tileSize, d);
+        // The simple API anchors the source domain at the pattern origin rather
+        // than inheriting the underlying drawing-area and group-specific offsets.
+        groupProperties.AnchorDomainAtOrigin();
         matrices = new List<Matrix4x4>();
         Initialize();
         
-        // Offset all transforms so that they first transform is identity
-        // Also store a sum of all translations for later averaging
-        // var center = matrices[0].MultiplyPoint(Vector3.zero);
+        // Map the first placement to each copy in the original geometric frame,
+        // keeping the wallpaper's rotation centers, mirror lines and domain aligned.
+        var firstInverse = matrices[0].inverse;
         for (var i = 1; i < matrices.Count; i++)
         {
-            var m0 = matrices[i];
-            var m = matrices[0].inverse * m0;
-            matrices[i] = m;
-            // var prevCenter = center;
-            // center = m.MultiplyPoint(Vector3.zero) + prevCenter;
+            matrices[i] = matrices[i] * firstInverse;
         }
         matrices[0] = Matrix4x4.identity;
 
