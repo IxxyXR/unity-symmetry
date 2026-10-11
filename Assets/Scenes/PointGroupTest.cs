@@ -11,7 +11,6 @@ public class PointGroupTest : MonoBehaviour
     [Header("Symmetry")]
     public PointSymmetry.Family family;
     [Min(1)] public int n = 3;
-    public float radius = 1f;
     
     [Header("Transform Before")]
     public Vector3 Position = Vector3.zero;
@@ -39,7 +38,7 @@ public class PointGroupTest : MonoBehaviour
     {
         n = Mathf.Max(1, n);
         displayRadius = Mathf.Max(0.01f, displayRadius);
-        sym = new PointSymmetry(family, n, radius);
+        sym = new PointSymmetry(family, n);
         domainOutline = sym.CreateDomainOutline(displayRadius);
     }
 

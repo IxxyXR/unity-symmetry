@@ -37,7 +37,6 @@ public class PointSymmetry {
     
     public readonly Family family;
     public readonly int n;
-    public readonly float radius;
 
     private List<Matrix4x4> getRotations(float angle)
     {
@@ -45,11 +44,9 @@ public class PointSymmetry {
         var rotations = new List<Matrix4x4>();
         for (int i = 0; i < count; i++)
         {
-            Vector3 centerOfRotation = Vector3.forward * radius;
             Vector3 rotationAxis = Vector3.up;
             var rotation = Matrix4x4.Rotate(Quaternion.AngleAxis(angle * i, rotationAxis));
-            var m = rotation * Matrix4x4.Translate(-centerOfRotation);
-            rotations.Add(m);
+            rotations.Add(rotation);
         }
         return rotations;
     }
@@ -225,11 +222,10 @@ public class PointSymmetry {
         return new DomainOutline(vertices, edges, arcEdges);
     }
 
-    public PointSymmetry(Family pointGroupFamily, int _n, float _radius)
+    public PointSymmetry(Family pointGroupFamily, int _n)
     {
         family = pointGroupFamily;
         n = _n;
-        radius = _radius;
         float angle = 360f / n;
 
         switch (pointGroupFamily)
@@ -307,8 +303,8 @@ public class PointSymmetry {
         }
 
         // Map the first placement to each copy without changing the geometric frame.
-        // Right multiplication cancels the source placement; left multiplication
-        // would move the symmetry center and axes into that placement's frame.
+        // Right multiplication cancels the source orientation; left multiplication
+        // would rotate the geometric axes into that placement's frame.
         var firstInverse = matrices[0].inverse;
         for (var i = 1; i < matrices.Count; i++)
         {
@@ -320,7 +316,6 @@ public class PointSymmetry {
     private List<Matrix4x4> matricesForPolyhedra(List<List<Vector3>> poly)
     {
         var result = new List<Matrix4x4>();
-        var centerOfRotation = Vector3.forward * radius;
         foreach (var face in poly)
         {
             var centroid = average(face);
@@ -329,8 +324,7 @@ public class PointSymmetry {
                 var vert = face[i];
                 var direction = vert - centroid;
                 var rotation = Matrix4x4.Rotate(Quaternion.LookRotation(direction, centroid));
-                var m = rotation * Matrix4x4.Translate(-centerOfRotation);
-                result.Add(m);
+                result.Add(rotation);
             }
         }
 

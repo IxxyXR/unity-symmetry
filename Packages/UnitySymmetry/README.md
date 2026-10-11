@@ -57,12 +57,12 @@ Rotations and reflections are represented by full matrices. Preserve reflected h
 
 ```csharp
 var symmetry = new PointSymmetry(
-    pointGroupFamily: PointSymmetry.Family.Cnv, _n: 5, _radius: 1f);
+    pointGroupFamily: PointSymmetry.Family.Cnv, _n: 5);
 ```
 
-`Family` includes `Cn`, `Cnv`, `Cnh`, `Sn`, `Dn`, `Dnh`, `Dnd`, `T`, `Th`, `Td`, `O`, `Oh`, `I` and `Ih`. Supply a positive `_n`; it controls axial families. The polyhedral families use their fixed geometry. `_radius` is an intermediate placement offset that cancels during normalization. The resulting operations preserve the geometric origin and have identity in slot zero. Axial rotations use local Y; polyhedral operations retain the original geometric axes.
+`Family` includes `Cn`, `Cnv`, `Cnh`, `Sn`, `Dn`, `Dnh`, `Dnd`, `T`, `Th`, `Td`, `O`, `Oh`, `I` and `Ih`. Supply a positive `_n`; it controls axial families. The polyhedral families use their fixed geometry. The resulting operations preserve the geometric origin and have identity in slot zero. Axial rotations use local Y; polyhedral operations retain the original geometric axes.
 
-The example project contains `Assets/Scenes/Point Group Test.unity`. Its `PointGroupTest` component exposes family, order, radius, source transforms and transforms applied to each copy.
+The example project contains `Assets/Scenes/Point Group Test.unity`. Its `PointGroupTest` component exposes family, order, source transforms and transforms applied to each copy.
 
 ### Point-group drawing domains
 
