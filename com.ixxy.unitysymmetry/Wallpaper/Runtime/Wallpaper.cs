@@ -527,9 +527,9 @@ public class SymmetryGroup
                 cosetReps[0] = setReflectionMatrix(fundamentalRegion.points[1], fundamentalRegion.points[2]);
                 cosetReps[0] =  Matrix4x4.Translate(new Vector3(0, (float)dy, 0)) * cosetReps[0];
                 cosetReps[1] = setRotate(180, new Vector2((float)(dx / 2 + offsetX), (float)(0 + offsetY)));
-                cosetReps[2] = cosetReps[1];
-                cosetReps[2] = cosetReps[0] * cosetReps[2];
-                cosetReps[2] = Matrix4x4.Translate(new Vector3((float)-dx * 2, 0)) * cosetReps[2];
+                cosetReps[2] = cosetReps[0] * cosetReps[1];
+                // Choose equivalent representatives that fill one compact 2-by-2 block.
+                cosetReps[1] = Matrix4x4.Translate(new Vector3(0, (float)(2 * dy), 0)) * cosetReps[1];
                 break;
 
             case R.cmm:
