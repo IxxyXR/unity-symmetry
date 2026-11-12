@@ -231,7 +231,7 @@ public class SymmetryGroup
         return tr * Matrix4x4.Rotate(Quaternion.Euler(0, 0, (float)rotation)) * tr.inverse;
     }
 
-    public SymmetryGroup(R symmetryGroupId, Vector2 tileSize, Vector4 d)
+    public SymmetryGroup(R symmetryGroupId, Vector2 tileSize, Vector4 d, bool compact = false)
     {
         id = symmetryGroupId;
 
@@ -528,8 +528,16 @@ public class SymmetryGroup
                 cosetReps[0] =  Matrix4x4.Translate(new Vector3(0, (float)dy, 0)) * cosetReps[0];
                 cosetReps[1] = setRotate(180, new Vector2((float)(dx / 2 + offsetX), (float)(0 + offsetY)));
                 cosetReps[2] = cosetReps[0] * cosetReps[1];
-                // Choose equivalent representatives that fill one compact 2-by-2 block.
-                cosetReps[1] = Matrix4x4.Translate(new Vector3(0, (float)(2 * dy), 0)) * cosetReps[1];
+                if (compact)
+                {
+                    // Choose equivalent representatives that fill one compact 2-by-2 block.
+                    cosetReps[1] = Matrix4x4.Translate(new Vector3(0, (float)(2 * dy), 0)) * cosetReps[1];
+                }
+                else
+                {
+                    // Retain the representatives used before the optional compact layout.
+                    cosetReps[2] = Matrix4x4.Translate(new Vector3((float)-dx * 2, 0)) * cosetReps[2];
+                }
                 break;
 
             case R.cmm:

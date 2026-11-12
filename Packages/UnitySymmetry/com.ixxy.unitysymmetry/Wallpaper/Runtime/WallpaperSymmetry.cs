@@ -16,7 +16,7 @@ public class WallpaperSymmetry
     public Vector2 UnitOffset => unitOffset;
     public Vector4 D => d;
 
-    public WallpaperSymmetry(SymmetryGroup.R _group, int _repeatX, int _repeatY, float _finalScale, float _w, float _h, float _sx, float _sy)
+    public WallpaperSymmetry(SymmetryGroup.R _group, int _repeatX, int _repeatY, float _finalScale, float _w, float _h, float _sx, float _sy, bool compact = false)
     {
         repeatX = _repeatX;
         repeatY = _repeatY;
@@ -117,7 +117,7 @@ public class WallpaperSymmetry
                 break;
         }
 
-        groupProperties = new SymmetryGroup(_group, tileSize, d);
+        groupProperties = new SymmetryGroup(_group, tileSize, d, compact);
         // The simple API anchors the source domain at the pattern origin rather
         // than inheriting the underlying drawing-area and group-specific offsets.
         groupProperties.AnchorDomainAtOrigin();
@@ -153,7 +153,7 @@ public class WallpaperSymmetry
     
     public WallpaperSymmetry(SymmetryGroup.R _group, int _repeatX, int _repeatY, 
         Vector2 _tileSize, double _unitScale, Vector2 _unitOffset, 
-        Vector2 _spacing, Vector4 d, float _finalScale)
+        Vector2 _spacing, Vector4 d, float _finalScale, bool compact = false)
     {
         repeatX = _repeatX;
         repeatY = _repeatY;
@@ -161,7 +161,7 @@ public class WallpaperSymmetry
         _unitScale = 1f;
         unitOffset = _unitOffset * (float)_unitScale;
         spacing = _spacing * (float)_unitScale;
-        groupProperties = new SymmetryGroup(_group, _tileSize * (float)_unitScale, d * (float)_unitScale); // TODO width and height don't do anything
+        groupProperties = new SymmetryGroup(_group, _tileSize * (float)_unitScale, d * (float)_unitScale, compact); // TODO width and height don't do anything
         matrices = new List<Matrix4x4>();
 
         Initialize();
