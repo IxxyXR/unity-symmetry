@@ -92,6 +92,8 @@ The advanced overload accepts `_tileSize`, `_unitScale`, `_unitOffset`, `_spacin
 
 The example project contains `Assets/Scenes/Wallpaper Test.unity`. Its `WallPaperTest` component offers simple group settings or the advanced lattice parameters, plus symmetry and domain gizmos.
 
+Both `WallpaperSymmetry` constructors accept a trailing `bool compact = false`. Pass `compact: true` to choose the compact pgg repeat block; other wallpaper groups are unchanged. The default retains the earlier pgg representatives. `SymmetryGroup` accepts the same option for direct callers. Both choices preserve the lattice and complete repeating pattern.
+
 ## Helical symmetry
 
 ```csharp
@@ -107,6 +109,13 @@ The example project contains `Assets/Scenes/Helical Test.unity`. Change copies, 
 ```csharp
 var symmetry = new SpaceGroupSymmetry(
     number: 19, repeats: new Vector3Int(2, 2, 2), cellSize: 2f);
+```
+
+The constructor accepts a trailing `bool compact = false`. The default keeps the database representatives. Pass `compact: true` to use precomputed lattice-equivalent representatives chosen for cohesive, filled drawing clusters. Copy counts, operation order, the identity operation and the primitive repeat lattice remain unchanged; the finite arrangement can differ. The original asymmetric-unit outline is shared by both modes.
+
+```csharp
+var compactSymmetry = new SpaceGroupSymmetry(
+    number: 19, repeats: Vector3Int.one, cellSize: 2f, compact: true);
 ```
 
 `number` is the international space-group number, from 1 to 230. The generator includes each group's rotations, reflections, centering translations, screw axes and glide planes. Each group uses its first Hall setting in spglib; `name`, `hallNumber` and `setting` identify that selection. Alternative settings and custom cell metrics are not exposed.

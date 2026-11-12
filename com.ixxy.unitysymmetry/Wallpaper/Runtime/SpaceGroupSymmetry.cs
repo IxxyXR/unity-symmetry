@@ -45,7 +45,8 @@ public sealed class SpaceGroupSymmetry
     /// <param name="number">International space-group number (1 to 230).</param>
     /// <param name="repeats">Positive primitive-cell counts along the three lattice vectors.</param>
     /// <param name="cellSize">Reference conventional-cell edge length; primitive vectors are derived from this basis.</param>
-    public SpaceGroupSymmetry(int number, Vector3Int repeats, float cellSize)
+    /// <param name="compact">Choose lattice-equivalent copies that form a cohesive drawing cluster. False keeps the database representatives.</param>
+    public SpaceGroupSymmetry(int number, Vector3Int repeats, float cellSize, bool compact = false)
     {
         if (number < 1 || number > 230) throw new ArgumentOutOfRangeException(nameof(number));
         if (repeats.x < 1 || repeats.y < 1 || repeats.z < 1)
@@ -69,6 +70,7 @@ public sealed class SpaceGroupSymmetry
         cellBasis = conventionalCellBasis * CreatePrimitiveBasis(name[0]);
 
         var operations = SpaceGroupData.Operations[index];
+        var shifts = compact ? SpaceGroupRepresentativeData.PrimitiveShifts[index] : Array.Empty<sbyte>();
         var inverseBasis = conventionalCellBasis.inverse;
         var rotations = new HashSet<Matrix4x4>();
         var cellOperations = new List<Matrix4x4>(operations.Length / 12);
@@ -85,7 +87,16 @@ public sealed class SpaceGroupSymmetry
             if (!rotations.Add(fractional)) continue;
             for (var row = 0; row < 3; row++)
                 fractional[row, 3] = operations[offset + 9 + row] / 12f;
-            cellOperations.Add(conventionalCellBasis * fractional * inverseBasis);
+            var operation = conventionalCellBasis * fractional * inverseBasis;
+            if (shifts.Length != 0)
+            {
+                // Choose the precomputed lattice image that keeps this repeat cluster compact.
+                // Rotations, reflection handedness and primitive repeat periods stay unchanged.
+                int shiftOffset = cellOperations.Count * 3;
+                var shift = new Vector3(shifts[shiftOffset], shifts[shiftOffset + 1], shifts[shiftOffset + 2]);
+                operation = Matrix4x4.Translate(cellBasis.MultiplyVector(shift)) * operation;
+            }
+            cellOperations.Add(operation);
         }
         cellOperations[0] = Matrix4x4.identity;
 
